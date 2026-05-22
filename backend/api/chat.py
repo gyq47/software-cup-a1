@@ -4,7 +4,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 from backend.services.llm_service import generate_repair_answer
-from backend.services.vector_service import semantic_search
+from backend.services.vector_service import hybrid_search
 
 router = APIRouter(prefix="/chat", tags=["chat"])
 
@@ -23,7 +23,7 @@ class ChatResponse(BaseModel):
 @router.post("")
 def chat(request: ChatRequest) -> ChatResponse:
     try:
-        contexts = semantic_search(request.question, top_k=request.top_k)
+        contexts = hybrid_search(request.question, top_k=request.top_k)
         answer = generate_repair_answer(request.question, contexts)
     except RuntimeError as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc

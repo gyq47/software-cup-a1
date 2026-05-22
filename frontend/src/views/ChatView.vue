@@ -1,8 +1,14 @@
 <script setup>
 import { Position } from '@element-plus/icons-vue'
+import MarkdownIt from 'markdown-it'
 import { nextTick, ref } from 'vue'
 
 import { sendChat } from '../api/chat'
+
+const markdown = new MarkdownIt({
+  breaks: true,
+  html: false,
+})
 
 const input = ref('')
 const loading = ref(false)
@@ -21,6 +27,28 @@ const scrollToBottom = async () => {
   if (container) {
     container.scrollTop = container.scrollHeight
   }
+}
+
+const renderMarkdown = (content) => {
+  return markdown.render(String(content || ''))
+}
+
+const sleep = (delay) => {
+  return new Promise((resolve) => {
+    window.setTimeout(resolve, delay)
+  })
+}
+
+const typeAnswer = async (message, answer) => {
+  message.content = ''
+  for (let index = 0; index < answer.length; index += 1) {
+    message.content += answer[index]
+    if (index % 12 === 0) {
+      await scrollToBottom()
+    }
+    await sleep(8)
+  }
+  await scrollToBottom()
 }
 
 const sendMessage = async () => {
@@ -46,8 +74,9 @@ const sendMessage = async () => {
 
   try {
     const data = await sendChat(question, 5)
-    pendingMessage.content = data.answer || '未获取到有效回答'
+    const answer = data.answer || '未获取到有效回答'
     pendingMessage.contexts = Array.isArray(data.contexts) ? data.contexts : []
+    await typeAnswer(pendingMessage, answer)
     pendingMessage.pending = false
   } catch (error) {
     pendingMessage.content = '后端服务连接失败'
@@ -92,7 +121,10 @@ const previewContent = (content) => {
               class="assistant-card"
               :class="{ pending: message.pending }"
             >
-              <div class="assistant-answer">{{ message.content }}</div>
+              <div
+                class="assistant-answer markdown-answer"
+                v-html="renderMarkdown(message.content)"
+              />
 
               <div
                 v-if="message.contexts && message.contexts.length > 0"
@@ -180,7 +212,107 @@ const previewContent = (content) => {
 .assistant-answer {
   color: #172033;
   line-height: 1.8;
-  white-space: pre-wrap;
+}
+
+.markdown-answer :deep(h1),
+.markdown-answer :deep(h2),
+.markdown-answer :deep(h3),
+.markdown-answer :deep(h4) {
+  margin: 18px 0 10px;
+  color: #0f172a;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.markdown-answer :deep(h1) {
+  padding-bottom: 8px;
+  border-bottom: 1px solid #dbe2ea;
+  font-size: 22px;
+}
+
+.markdown-answer :deep(h2) {
+  font-size: 19px;
+}
+
+.markdown-answer :deep(h3) {
+  font-size: 17px;
+}
+
+.markdown-answer :deep(h4) {
+  font-size: 15px;
+}
+
+.markdown-answer :deep(p) {
+  margin: 0 0 12px;
+  color: #1f2937;
+  line-height: 1.85;
+}
+
+.markdown-answer :deep(strong) {
+  color: #111827;
+  font-weight: 800;
+}
+
+.markdown-answer :deep(ul),
+.markdown-answer :deep(ol) {
+  margin: 8px 0 14px;
+  padding-left: 24px;
+}
+
+.markdown-answer :deep(li) {
+  margin: 6px 0;
+  color: #1f2937;
+  line-height: 1.75;
+}
+
+.markdown-answer :deep(hr) {
+  height: 1px;
+  margin: 18px 0;
+  border: 0;
+  background: #dbe2ea;
+}
+
+.markdown-answer :deep(code) {
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #eef2f7;
+  color: #1e3a8a;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 0.92em;
+}
+
+.markdown-answer :deep(pre) {
+  margin: 12px 0 16px;
+  padding: 14px;
+  overflow: auto;
+  border: 1px solid #dbe2ea;
+  border-radius: 8px;
+  background: #f1f5f9;
+}
+
+.markdown-answer :deep(pre code) {
+  display: block;
+  padding: 0;
+  background: transparent;
+  color: #172033;
+  line-height: 1.7;
+  white-space: pre;
+}
+
+.markdown-answer :deep(blockquote) {
+  margin: 12px 0;
+  padding: 10px 14px;
+  border-left: 4px solid #2563eb;
+  background: #f8fafc;
+  color: #334155;
+}
+
+.markdown-answer :deep(:first-child) {
+  margin-top: 0;
+}
+
+.markdown-answer :deep(:last-child) {
+  margin-bottom: 0;
 }
 
 .user-bubble {

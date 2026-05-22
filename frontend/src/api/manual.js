@@ -18,3 +18,14 @@ export const uploadManual = async (file, onUploadProgress) => {
 
   return response.data
 }
+
+export const semanticSearch = async (q, topK = 5) => {
+  const response = await http.get('/api/manual/semantic-search', {
+    params: {
+      q,
+      top_k: topK,
+    },
+  })
+
+  return response.data
+}

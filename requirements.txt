@@ -11,8 +11,10 @@ pypdf==6.4.1
 python-dotenv
 python-multipart==0.0.21
 faiss-cpu
+jieba
 numpy
 openai
+rank-bm25
 sentence-transformers
 starlette==1.0.0
 typing-inspection==0.4.2
