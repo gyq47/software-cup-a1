@@ -1,0 +1,42 @@
+[
+  {
+    "id": "rule_001",
+    "name": "安装拆卸更换作业安全提示",
+    "trigger_keywords": ["安装", "拆卸", "更换"],
+    "required_keywords": ["停机", "断电", "安全"],
+    "level": "high",
+    "message": "涉及安装、拆卸或更换作业时，作业卡必须包含停机、断电或安全相关提示。"
+  },
+  {
+    "id": "rule_002",
+    "name": "发动机高温防护提示",
+    "trigger_keywords": ["发动机", "高温", "冷却液"],
+    "required_keywords": ["防烫伤", "冷却", "降温"],
+    "level": "high",
+    "message": "涉及发动机、高温或冷却液作业时，作业卡必须包含防烫伤、冷却或降温提示。"
+  },
+  {
+    "id": "rule_003",
+    "name": "紧固件扭矩规范提示",
+    "trigger_keywords": ["螺母", "螺栓", "紧固", "锁紧"],
+    "required_keywords": ["扭矩", "力矩", "按手册要求"],
+    "level": "high",
+    "message": "涉及螺母、螺栓、紧固或锁紧作业时，作业卡必须包含扭矩、力矩或按手册要求执行的提示。"
+  },
+  {
+    "id": "rule_004",
+    "name": "旋转传动部件防夹卷提示",
+    "trigger_keywords": ["旋转", "齿轮", "链条", "皮带"],
+    "required_keywords": ["防夹伤", "防卷入"],
+    "level": "medium",
+    "message": "涉及旋转、齿轮、链条或皮带作业时，作业卡必须包含防夹伤或防卷入提示。"
+  },
+  {
+    "id": "rule_005",
+    "name": "油液系统检查提示",
+    "trigger_keywords": ["机油", "油液", "漏油"],
+    "required_keywords": ["油位", "泄漏", "密封"],
+    "level": "medium",
+    "message": "涉及机油、油液或漏油作业时，作业卡必须包含油位、泄漏或密封检查提示。"
+  }
+]

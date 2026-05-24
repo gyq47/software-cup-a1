@@ -52,6 +52,13 @@
             <p>结合检索上下文输出原因、步骤、安全提醒和依据。</p>
           </div>
         </div>
+        <div class="flow-item">
+          <span class="flow-index">04</span>
+          <div>
+            <strong>标准作业卡</strong>
+            <p>将检修任务生成现场作业指导书，并执行合规校验。</p>
+          </div>
+        </div>
       </div>
     </el-card>
   </section>

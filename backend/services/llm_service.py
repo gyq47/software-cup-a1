@@ -3,6 +3,7 @@ from typing import Any
 from openai import OpenAI, OpenAIError
 
 from backend.core.config import QWEN_API_KEY, QWEN_BASE_URL, QWEN_MODEL
+from backend.services.context_cleaner import clean_contexts
 
 
 def generate_repair_answer(question: str, contexts: list[dict[str, Any]]) -> str:
@@ -17,20 +18,7 @@ def generate_repair_answer(question: str, contexts: list[dict[str, Any]]) -> str
     messages = [
         {
             "role": "system",
-            "content": (
-                "你是设备检修作业辅助专家，服务于工业维修、装配、拆卸、检查、调整等现场作业。"
-                "必须优先依据用户问题下方给出的知识库检索片段回答。"
-                "检索片段来自 Hybrid Search，请优先参考 final_score、keyword_hits、bm25_score 较高的片段，"
-                "再结合 semantic_score 判断相关性。"
-                "不要编造手册中没有的步骤、参数、扭矩、间隙、零件型号或安全规范。"
-                "如果知识片段不足，必须明确写出“知识库中未检索到充分依据，以下仅为通用建议。”"
-                "回答必须结构化，并严格包含：一、问题判断；二、可能原因；三、标准检查步骤；"
-                "四、标准作业步骤；五、安全与合规提醒；六、参考依据。"
-                "参考依据中必须尽量引用文件名、页码和 chunk_id，例如："
-                "《摩托车发动机维修手册.pdf》第 26 页，chunk_id: xxx。"
-                "如果涉及拆卸、安装、通电、发动机运行等作业，必须提醒停机断电、防烫伤、防夹伤、"
-                "使用合适工具、扭矩按手册要求执行、不确定时由专业人员操作。"
-            ),
+            "content": build_system_prompt(),
         },
         {
             "role": "user",
@@ -55,15 +43,32 @@ def generate_repair_answer(question: str, contexts: list[dict[str, Any]]) -> str
 
 
 def build_user_prompt(question: str, contexts: list[dict[str, Any]]) -> str:
-    context_text = format_contexts(contexts)
+    cleaned_contexts = clean_contexts(question, contexts)
+    context_text = format_contexts(cleaned_contexts)
     if not context_text:
         context_text = "知识库中未检索到充分依据，以下仅为通用建议。"
 
     return (
         f"用户问题：{question}\n\n"
-        f"知识库检索上下文（已按 Hybrid Search 综合相关性排序）：\n{context_text}\n\n"
-        "请面向设备检修作业人员，用清晰、可执行、谨慎的中文回答。"
-        "若上下文与问题不匹配，请降低其参考权重，并明确说明依据不足。"
+        f"已清洗的 RAG 上下文（按 Hybrid Search 相关性排序，已截取相关句并去重）：\n{context_text}\n\n"
+        "请输出现场可执行的检修 SOP。不要输出大段理论解释，不要使用“根据您的问题”“综合分析”等 AI 话术。"
+    )
+
+
+def build_system_prompt() -> str:
+    return (
+        "你是设备检修作业辅助专家，输出必须像工业维修 SOP、现场操作卡。"
+        "必须优先依据已清洗的知识片段回答，优先使用 final_score、keyword_hits、bm25_score 高的片段。"
+        "不得编造手册没有的步骤、参数、扭矩、间隙、零件型号。"
+        "知识片段不足时，必须写明：知识库中未检索到充分依据，以下仅为通用建议。"
+        "输出要短、准、可执行，避免理论展开和免责声明堆叠。"
+        "固定输出以下六部分："
+        "一、问题判断；二、可能原因；三、标准检查步骤；四、标准作业步骤；五、安全与合规提醒；六、参考依据。"
+        "检查步骤和作业步骤必须使用“步骤1：”“步骤2：”“步骤3：”格式，每步只写一个动作或判断。"
+        "每个重要步骤后尽量标注来源，格式：【来源：文件名，第X页】。"
+        "参考依据部分列出文件名、页码、chunk_id。"
+        "涉及发动机、通电、拆卸、安装、高温、旋转部件时，必须提醒停机断电、防烫伤、防夹伤、"
+        "使用专用或合适工具、扭矩按手册要求执行，不确定时由专业人员操作。"
     )
 
 

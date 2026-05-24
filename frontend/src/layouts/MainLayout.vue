@@ -1,8 +1,11 @@
 <script setup>
 import {
   ChatDotRound,
+  Camera,
   DocumentAdd,
+  EditPen,
   House,
+  Operation,
   Search,
 } from '@element-plus/icons-vue'
 import { computed } from 'vue'
@@ -52,6 +55,18 @@ const handleSelect = (path) => {
         <el-menu-item index="/search">
           <el-icon><Search /></el-icon>
           <span>知识检索</span>
+        </el-menu-item>
+        <el-menu-item index="/workflow">
+          <el-icon><Operation /></el-icon>
+          <span>标准作业卡</span>
+        </el-menu-item>
+        <el-menu-item index="/diagnosis">
+          <el-icon><Camera /></el-icon>
+          <span>多模态故障诊断</span>
+        </el-menu-item>
+        <el-menu-item index="/feedback">
+          <el-icon><EditPen /></el-icon>
+          <span>知识审核闭环</span>
         </el-menu-item>
       </el-menu>
     </el-aside>
