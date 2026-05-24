@@ -21,8 +21,8 @@ export const useAuthStore = defineStore('auth', {
     roleLevel: (state) => ROLE_LEVELS[state.role] || 0,
   },
   actions: {
-    async login(username, password) {
-      const data = await loginApi(username, password)
+    async login(username, password, role) {
+      const data = await loginApi(username, password, role)
       if (!data.success) {
         throw new Error(data.message || '登录失败')
       }

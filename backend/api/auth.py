@@ -27,12 +27,13 @@ DEMO_USERS = {
 class LoginRequest(BaseModel):
     username: str
     password: str
+    role: str
 
 
 @router.post("/login")
 def login(request: LoginRequest) -> dict[str, Any]:
     user = DEMO_USERS.get(request.username)
-    if not user or user["password"] != request.password:
+    if not user or user["password"] != request.password or user["role"] != request.role:
         return {
             "success": False,
             "message": "用户名或密码错误",

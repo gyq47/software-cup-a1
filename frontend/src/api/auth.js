@@ -5,10 +5,11 @@ const http = axios.create({
   timeout: 30000,
 })
 
-export const loginApi = async (username, password) => {
+export const loginApi = async (username, password, role) => {
   const response = await http.post('/api/auth/login', {
     username,
     password,
+    role,
   })
   return response.data
 }
