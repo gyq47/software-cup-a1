@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from backend.api.auth import router as auth_router
 from backend.api.chat import router as chat_router
 from backend.api.diagnosis import router as diagnosis_router
 from backend.api.feedback import router as feedback_router
@@ -24,6 +25,7 @@ app.add_middleware(
 )
 
 app.include_router(health_router, prefix=API_PREFIX)
+app.include_router(auth_router, prefix=API_PREFIX)
 app.include_router(manual_router, prefix=API_PREFIX)
 app.include_router(search_router, prefix=API_PREFIX)
 app.include_router(chat_router, prefix=API_PREFIX)

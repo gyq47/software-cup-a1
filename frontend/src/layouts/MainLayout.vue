@@ -6,18 +6,43 @@ import {
   EditPen,
   House,
   Operation,
+  Setting,
   Search,
+  Share,
 } from '@element-plus/icons-vue'
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
+import { useAuthStore } from '../stores/auth'
+
 const route = useRoute()
 const router = useRouter()
+const auth = useAuthStore()
 
 const activeMenu = computed(() => route.path)
+const menuItems = computed(() => {
+  const items = [
+    { index: '/', label: '首页', icon: House, roles: ['worker', 'expert', 'admin'] },
+    { index: '/chat', label: '智能问答', icon: ChatDotRound, roles: ['worker', 'expert', 'admin'] },
+    { index: '/diagnosis', label: '多模态诊断', icon: Camera, roles: ['worker', 'expert', 'admin'] },
+    { index: '/workflow', label: '标准作业卡', icon: Operation, roles: ['worker', 'expert', 'admin'] },
+    { index: '/feedback', label: auth.atLeast('expert') ? '专家审核中心' : '知识审核闭环', icon: EditPen, roles: ['worker', 'expert', 'admin'] },
+    { index: '/upload', label: 'PDF上传', icon: DocumentAdd, roles: ['admin'] },
+    { index: '/search', label: '知识检索', icon: Search, roles: ['expert', 'admin'] },
+    { index: '/graph', label: '知识图谱', icon: Share, roles: ['expert', 'admin'] },
+    { index: '/rules', label: '规则管理', icon: Setting, roles: ['admin'] },
+    { index: '/admin', label: '系统管理', icon: Setting, roles: ['admin'] },
+  ]
+  return items.filter((item) => item.roles.includes(auth.role))
+})
 
 const handleSelect = (path) => {
   router.push(path)
+}
+
+const handleLogout = async () => {
+  await auth.logout()
+  router.push('/login')
 }
 </script>
 
@@ -40,33 +65,9 @@ const handleSelect = (path) => {
         class="side-menu"
         @select="handleSelect"
       >
-        <el-menu-item index="/">
-          <el-icon><House /></el-icon>
-          <span>首页</span>
-        </el-menu-item>
-        <el-menu-item index="/chat">
-          <el-icon><ChatDotRound /></el-icon>
-          <span>AI检修助手</span>
-        </el-menu-item>
-        <el-menu-item index="/upload">
-          <el-icon><DocumentAdd /></el-icon>
-          <span>PDF上传</span>
-        </el-menu-item>
-        <el-menu-item index="/search">
-          <el-icon><Search /></el-icon>
-          <span>知识检索</span>
-        </el-menu-item>
-        <el-menu-item index="/workflow">
-          <el-icon><Operation /></el-icon>
-          <span>标准作业卡</span>
-        </el-menu-item>
-        <el-menu-item index="/diagnosis">
-          <el-icon><Camera /></el-icon>
-          <span>多模态故障诊断</span>
-        </el-menu-item>
-        <el-menu-item index="/feedback">
-          <el-icon><EditPen /></el-icon>
-          <span>知识审核闭环</span>
+        <el-menu-item v-for="item in menuItems" :key="item.index" :index="item.index">
+          <el-icon><component :is="item.icon" /></el-icon>
+          <span>{{ item.label }}</span>
         </el-menu-item>
       </el-menu>
     </el-aside>
@@ -77,7 +78,14 @@ const handleSelect = (path) => {
           <div class="system-name">基于多模态大模型技术的设备检修知识检索与作业系统</div>
           <div class="system-status">Backend API · Document Search · Repair Assistant</div>
         </div>
-        <el-tag type="success" effect="dark">运行中</el-tag>
+        <div class="user-area">
+          <el-avatar :size="34">{{ auth.display_name?.slice(0, 1) }}</el-avatar>
+          <div class="user-meta">
+            <strong>{{ auth.display_name }}</strong>
+            <el-tag size="small" type="info">{{ auth.role }}</el-tag>
+          </div>
+          <el-button size="small" @click="handleLogout">退出登录</el-button>
+        </div>
       </el-header>
 
       <el-main class="content">

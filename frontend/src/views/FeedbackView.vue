@@ -1,8 +1,9 @@
 <script setup>
 import { ElMessage } from 'element-plus'
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute } from 'vue-router'
 
+import { useAuthStore } from '../stores/auth'
 import {
   getFeedbackCases,
   getPendingFeedback,
@@ -11,6 +12,7 @@ import {
 } from '../api/feedback'
 
 const route = useRoute()
+const auth = useAuthStore()
 const activeTab = ref('submit')
 const submitting = ref(false)
 const loadingPending = ref(false)
@@ -18,6 +20,7 @@ const loadingCases = ref(false)
 const pendingItems = ref([])
 const caseItems = ref([])
 const reviewComments = reactive({})
+const canReview = computed(() => auth.atLeast('expert'))
 
 const form = reactive({
   source_type: 'workflow',
@@ -39,8 +42,11 @@ onMounted(() => {
   if (typeof route.query.question === 'string') {
     form.original_question = route.query.question
   }
-  loadPending()
-  loadCases()
+  form.submitter_role = auth.role || 'worker'
+  if (canReview.value) {
+    loadPending()
+    loadCases()
+  }
 })
 
 const handleSubmit = async () => {
@@ -54,8 +60,10 @@ const handleSubmit = async () => {
     await submitFeedback({ ...form })
     ElMessage.success('修正已提交，等待专家审核')
     form.correction_text = ''
-    activeTab.value = 'review'
-    await loadPending()
+    if (canReview.value) {
+      activeTab.value = 'review'
+      await loadPending()
+    }
   } catch (error) {
     ElMessage.error('反馈提交失败，请检查后端服务')
   } finally {
@@ -64,6 +72,7 @@ const handleSubmit = async () => {
 }
 
 const loadPending = async () => {
+  if (!canReview.value) return
   loadingPending.value = true
   try {
     const data = await getPendingFeedback()
@@ -76,6 +85,7 @@ const loadPending = async () => {
 }
 
 const loadCases = async () => {
+  if (!canReview.value) return
   loadingCases.value = true
   try {
     const data = await getFeedbackCases()
@@ -88,6 +98,10 @@ const loadCases = async () => {
 }
 
 const handleReview = async (item, action) => {
+  if (!canReview.value) {
+    ElMessage.warning('当前角色无权限访问专家审核功能')
+    return
+  }
   try {
     await reviewFeedback({
       feedback_id: item.feedback_id,
@@ -174,7 +188,7 @@ const tagType = (value) => {
           </el-form>
         </el-tab-pane>
 
-        <el-tab-pane label="专家审核" name="review">
+        <el-tab-pane v-if="canReview" label="专家审核" name="review">
           <el-button class="refresh-button" @click="loadPending">刷新待审核</el-button>
           <div v-loading="loadingPending" class="feedback-list">
             <el-empty v-if="!pendingItems.length" description="暂无待审核反馈" />
@@ -205,7 +219,7 @@ const tagType = (value) => {
           </div>
         </el-tab-pane>
 
-        <el-tab-pane label="已入库案例" name="cases">
+        <el-tab-pane v-if="canReview" label="已入库案例" name="cases">
           <el-button class="refresh-button" @click="loadCases">刷新案例</el-button>
           <div v-loading="loadingCases" class="case-list">
             <el-empty v-if="!caseItems.length" description="暂无已入库案例" />
@@ -225,6 +239,14 @@ const tagType = (value) => {
           </div>
         </el-tab-pane>
       </el-tabs>
+      <el-alert
+        v-if="!canReview"
+        title="当前角色无权限访问专家审核功能"
+        type="warning"
+        :closable="false"
+        show-icon
+        class="permission-alert"
+      />
     </el-card>
   </section>
 </template>
@@ -311,6 +333,10 @@ const tagType = (value) => {
   margin-top: 10px;
   color: #64748b;
   font-size: 13px;
+}
+
+.permission-alert {
+  margin-top: 14px;
 }
 
 @media (max-width: 980px) {

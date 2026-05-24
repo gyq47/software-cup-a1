@@ -122,6 +122,23 @@ textarea {
   font-size: 12px;
 }
 
+.user-area {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.user-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-meta strong {
+  color: #172033;
+  font-size: 14px;
+}
+
 .content {
   min-height: calc(100vh - 76px);
   padding: 24px;
