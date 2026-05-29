@@ -1,6 +1,35 @@
-venv/
+# Python cache
 __pycache__/
-*.pyc
+*.py[cod]
+*$py.class
+
+# Python virtual environments
+venv/
+.venv/
+
+# Environment files
 .env
+.env.*
+!.env.example
+
+# Frontend dependencies and build output
+frontend/node_modules/
+frontend/dist/
+
+# User uploads and generated manual assets
 uploads/manuals/*
 !uploads/manuals/.gitkeep
+backend/data/manuals/
+backend/data/manual_pages/
+
+# Vector stores and processed runtime artifacts
+backend/data/vector_store/
+backend/data/processed/
+
+# Runtime feedback and case data
+backend/data/cases/case_items.json
+backend/data/feedback/feedback_items.json
+
+# Keep the lightweight knowledge graph source data versionable
+!backend/data/knowledge_graph/
+!backend/data/knowledge_graph/graph.json

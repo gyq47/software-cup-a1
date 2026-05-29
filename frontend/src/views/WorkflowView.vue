@@ -16,13 +16,19 @@ import { generateWorkflow } from '../api/workflow'
 const route = useRoute()
 const router = useRouter()
 const task = ref('如何安装离合器')
+const deviceModel = ref('')
 const topK = ref(5)
 const loading = ref(false)
 const workflow = ref(null)
 const complianceResult = ref(null)
 const contexts = ref([])
+const evidenceItems = ref([])
+const toolTrace = ref([])
 const checkedSteps = ref([])
 const checkedFinalItems = ref([])
+const pagePreviewVisible = ref(false)
+const pagePreviewUrl = ref('')
+const pagePreviewTitle = ref('')
 
 const tools = computed(() => workflow.value?.tools || [])
 const safetyNotices = computed(() => workflow.value?.safety_notices || [])
@@ -57,14 +63,18 @@ const handleGenerate = async () => {
   workflow.value = null
   complianceResult.value = null
   contexts.value = []
+  evidenceItems.value = []
+  toolTrace.value = []
   checkedSteps.value = []
   checkedFinalItems.value = []
 
   try {
-    const data = await generateWorkflow(text, topK.value)
+    const data = await generateWorkflow(text, topK.value, deviceModel.value)
     workflow.value = data.workflow
     complianceResult.value = data.compliance_result
     contexts.value = Array.isArray(data.contexts) ? data.contexts : []
+    evidenceItems.value = Array.isArray(data.evidence_items) ? data.evidence_items : []
+    toolTrace.value = Array.isArray(data.tool_trace) ? data.tool_trace : []
     ElMessage.success('标准作业卡已生成')
   } catch (error) {
     ElMessage.error('标准作业卡生成失败，请检查后端服务')
@@ -127,8 +137,45 @@ const isLowEvidenceStep = (step) => {
 }
 
 const formatScore = (score) => {
-  if (typeof score !== 'number') return '-'
-  return score.toFixed(2)
+  const value = Number(score)
+  if (!Number.isFinite(value)) return '-'
+  return value.toFixed(2)
+}
+
+const evidenceSourceLabel = (item) => (
+  item?.source_type === 'feedback_case' || item?.evidence_type === 'feedback_case'
+    ? '审核案例'
+    : item?.source_type === 'manual_image' || item?.evidence_type === 'manual_image'
+      ? '手册图片'
+      : '维修手册'
+)
+
+const getPagePreviewUrl = (item) => {
+  const previewUrlValue = item?.preview_url || ''
+  if (previewUrlValue.startsWith('http')) {
+    return previewUrlValue
+  }
+  if (previewUrlValue.startsWith('/')) {
+    return `http://localhost:8000${previewUrlValue}`
+  }
+  if (item?.page_image_path) {
+    return `http://localhost:8000/api/manual/page-image?path=${encodeURIComponent(item.page_image_path)}`
+  }
+  return ''
+}
+
+const openPagePreview = (item) => {
+  const url = getPagePreviewUrl(item)
+  if (!url) return
+  pagePreviewUrl.value = url
+  pagePreviewTitle.value = `${item.pdf_filename || item.filename || '维修手册'} 第 ${item.page_number || item.page || '-'} 页`
+  pagePreviewVisible.value = true
+}
+
+const toolStatusType = (status) => {
+  if (status === 'success') return 'success'
+  if (status === 'failed') return 'danger'
+  return 'info'
 }
 </script>
 
@@ -155,6 +202,12 @@ const formatScore = (score) => {
 
     <el-card shadow="never" class="sop-query-card no-print">
       <div class="sop-query">
+        <el-input
+          v-model="deviceModel"
+          size="large"
+          placeholder="设备型号，可选，例如 SINUMERIK 828D"
+          clearable
+        />
         <el-input
           v-model="task"
           size="large"
@@ -294,6 +347,12 @@ const formatScore = (score) => {
                           <div class="evidence-source-head">
                             <div>
                               <strong>{{ reference.filename || '未知文件' }}</strong>
+                              <el-tag :type="evidenceSourceLabel(reference) === '审核案例' ? 'success' : 'primary'" effect="plain">
+                                {{ evidenceSourceLabel(reference) }}
+                              </el-tag>
+                              <el-tag v-if="reference.device_model" type="info" effect="plain">
+                                来源设备：{{ reference.device_model }}
+                              </el-tag>
                               <el-tag type="primary" effect="dark">
                                 第 {{ reference.page || '-' }} 页
                               </el-tag>
@@ -312,6 +371,20 @@ const formatScore = (score) => {
                           </div>
                           <div class="chunk-id">chunk_id: {{ reference.chunk_id || '-' }}</div>
                           <p class="evidence-content">{{ reference.content }}</p>
+                          <div class="evidence-actions">
+                            <el-button
+                              v-if="getPagePreviewUrl(reference)"
+                              size="small"
+                              type="primary"
+                              plain
+                              @click="openPagePreview(reference)"
+                            >
+                              查看原文页
+                            </el-button>
+                            <el-tag v-else-if="evidenceSourceLabel(reference) === '审核案例'" type="success" effect="plain">
+                              经验案例，无 PDF 页截图
+                            </el-tag>
+                          </div>
                         </div>
                       </el-collapse-item>
                     </el-collapse>
@@ -413,6 +486,25 @@ const formatScore = (score) => {
             </div>
           </el-card>
 
+          <el-card v-if="toolTrace.length" shadow="never" class="sop-side-card tool-trace-card">
+            <template #header>
+              <div class="sop-card-header">工具链执行过程</div>
+            </template>
+            <div class="tool-trace-list">
+              <div v-for="tool in toolTrace" :key="`${tool.tool_name}-${tool.output_summary}`" class="tool-trace-item">
+                <div>
+                  <strong>{{ tool.display_name }}</strong>
+                  <p>{{ tool.output_summary }}</p>
+                  <small v-if="tool.error">错误：{{ tool.error }}</small>
+                </div>
+                <div class="tool-trace-meta">
+                  <el-tag :type="toolStatusType(tool.status)" effect="plain">{{ tool.status }}</el-tag>
+                  <span>{{ tool.duration_ms || 0 }} ms</span>
+                </div>
+              </div>
+            </div>
+          </el-card>
+
           <el-card shadow="never" class="sop-side-card evidence-risk-card">
             <template #header>
               <div class="sop-card-header">知识依据风险</div>
@@ -433,9 +525,88 @@ const formatScore = (score) => {
               show-icon
             />
           </el-card>
+
+          <el-card shadow="never" class="sop-side-card manual-evidence-card">
+            <template #header>
+              <div class="sop-card-header">
+                <span>手册依据面板</span>
+                <el-tag type="primary">{{ evidenceItems.length }} 条</el-tag>
+              </div>
+            </template>
+
+            <el-empty
+              v-if="!evidenceItems.length"
+              description="暂无手册依据"
+              :image-size="80"
+            />
+
+            <el-collapse v-else class="manual-evidence-collapse">
+              <el-collapse-item
+                v-for="(item, index) in evidenceItems"
+                :key="item.chunk_id || `${item.filename}-${item.page}-${index}`"
+                :name="`manual-${index}`"
+              >
+                <template #title>
+                  <div class="manual-evidence-title">
+                    <span>{{ item.filename || '未知手册' }}</span>
+                    <el-tag :type="evidenceSourceLabel(item) === '审核案例' ? 'success' : 'primary'" effect="plain">
+                      {{ evidenceSourceLabel(item) }}
+                    </el-tag>
+                    <el-tag v-if="item.device_model" type="info" effect="plain">
+                      来源设备：{{ item.device_model }}
+                    </el-tag>
+                    <el-tag type="primary" effect="dark">第 {{ item.page || '-' }} 页</el-tag>
+                  </div>
+                </template>
+
+                <div class="manual-evidence-item">
+                  <p class="manual-evidence-summary">
+                    {{ item.summary }}
+                  </p>
+                  <div class="score-tags">
+                    <el-tag type="success" effect="plain">
+                      final {{ formatScore(item.final_score) }}
+                    </el-tag>
+                    <el-tag type="warning" effect="plain">
+                      bm25 {{ formatScore(item.bm25_score) }}
+                    </el-tag>
+                    <el-tag type="info" effect="plain">
+                      hits {{ item.keyword_hits || 0 }}
+                    </el-tag>
+                  </div>
+                  <div class="chunk-id">chunk_id: {{ item.chunk_id || '-' }}</div>
+                  <p class="manual-evidence-text">{{ item.content }}</p>
+                  <div class="evidence-actions">
+                    <el-button
+                      v-if="getPagePreviewUrl(item)"
+                      size="small"
+                      type="primary"
+                      plain
+                      @click="openPagePreview(item)"
+                    >
+                      查看原文页
+                    </el-button>
+                    <el-tag v-else-if="evidenceSourceLabel(item) === '审核案例'" type="success" effect="plain">
+                      经验案例，无 PDF 页截图
+                    </el-tag>
+                  </div>
+                  <el-alert
+                    v-if="!getPagePreviewUrl(item) && evidenceSourceLabel(item) !== '审核案例'"
+                    title="暂未生成页面预览，可根据文件名和页码定位原始手册。"
+                    type="info"
+                    :closable="false"
+                    show-icon
+                  />
+                </div>
+              </el-collapse-item>
+            </el-collapse>
+          </el-card>
         </aside>
       </div>
     </div>
+    <el-dialog v-model="pagePreviewVisible" :title="pagePreviewTitle" width="72%" class="page-preview-dialog">
+      <img v-if="pagePreviewUrl" :src="pagePreviewUrl" class="page-preview-image" alt="维修手册原文页" />
+    </el-dialog>
   </section>
 </template>
 
@@ -753,6 +924,98 @@ const formatScore = (score) => {
   border-radius: 8px;
   background: #f8fafc;
   color: #475569;
+}
+
+.manual-evidence-card {
+  border-color: #bfdbfe;
+}
+
+.manual-evidence-collapse {
+  border-top: 1px solid #dbeafe;
+}
+
+.manual-evidence-title {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-right: 8px;
+}
+
+.manual-evidence-title span {
+  overflow: hidden;
+  color: #172033;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.manual-evidence-item {
+  padding: 12px;
+  border: 1px solid #dbeafe;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.manual-evidence-summary,
+.manual-evidence-text {
+  margin: 0 0 10px;
+  color: #334155;
+  line-height: 1.75;
+}
+
+.manual-evidence-text {
+  padding: 10px;
+  border-radius: 6px;
+  background: #eef2f7;
+}
+
+.tool-trace-list {
+  display: grid;
+  gap: 8px;
+}
+
+.tool-trace-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px;
+  border: 1px solid #dbeafe;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.tool-trace-item p {
+  margin: 4px 0;
+  color: #475569;
+}
+
+.tool-trace-item small {
+  color: #dc2626;
+}
+
+.tool-trace-meta {
+  display: grid;
+  justify-items: end;
+  gap: 6px;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+.evidence-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0;
+}
+
+.page-preview-image {
+  width: 100%;
+  max-height: 78vh;
+  object-fit: contain;
+  background: #f8fafc;
 }
 
 .sop-skeleton {

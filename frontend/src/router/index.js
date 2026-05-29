@@ -1,15 +1,21 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
 import { useAuthStore } from '../stores/auth'
-import AdminView from '../views/AdminView.vue'
 import ChatView from '../views/ChatView.vue'
 import DiagnosisView from '../views/DiagnosisView.vue'
 import FeedbackView from '../views/FeedbackView.vue'
 import GraphView from '../views/GraphView.vue'
 import HomeView from '../views/HomeView.vue'
+import KnowledgeReviewView from '../views/KnowledgeReviewView.vue'
 import LoginView from '../views/LoginView.vue'
+import ManualsView from '../views/ManualsView.vue'
+import MyRecordsView from '../views/MyRecordsView.vue'
 import SearchView from '../views/SearchView.vue'
+import SystemConfigView from '../views/SystemConfigView.vue'
+import SystemDiagnosticsView from '../views/SystemDiagnosticsView.vue'
 import UploadView from '../views/UploadView.vue'
+import UsersView from '../views/UsersView.vue'
+import WorkbenchView from '../views/WorkbenchView.vue'
 import WorkflowView from '../views/WorkflowView.vue'
 
 const routes = [
@@ -23,6 +29,66 @@ const routes = [
   },
   {
     path: '/',
+    redirect: '/workbench',
+  },
+  {
+    path: '/workbench',
+    name: 'workbench',
+    component: WorkbenchView,
+    meta: {
+      roles: ['worker', 'expert', 'admin'],
+    },
+  },
+  {
+    path: '/my-records',
+    name: 'my-records',
+    component: MyRecordsView,
+    meta: {
+      roles: ['worker'],
+    },
+  },
+  {
+    path: '/review',
+    name: 'review',
+    component: KnowledgeReviewView,
+    meta: {
+      roles: ['expert'],
+    },
+  },
+  {
+    path: '/manuals',
+    name: 'manuals',
+    component: ManualsView,
+    meta: {
+      roles: ['expert', 'admin'],
+    },
+  },
+  {
+    path: '/users',
+    name: 'users',
+    component: UsersView,
+    meta: {
+      roles: ['admin'],
+    },
+  },
+  {
+    path: '/system',
+    name: 'system',
+    component: SystemConfigView,
+    meta: {
+      roles: ['admin'],
+    },
+  },
+  {
+    path: '/diagnostics',
+    name: 'diagnostics',
+    component: SystemDiagnosticsView,
+    meta: {
+      roles: ['admin'],
+    },
+  },
+  {
+    path: '/home',
     name: 'home',
     component: HomeView,
   },
@@ -36,7 +102,7 @@ const routes = [
     name: 'upload',
     component: UploadView,
     meta: {
-      roles: ['admin'],
+      roles: ['expert', 'admin'],
     },
   },
   {
@@ -61,6 +127,9 @@ const routes = [
     path: '/feedback',
     name: 'feedback',
     component: FeedbackView,
+    meta: {
+      roles: ['worker'],
+    },
   },
   {
     path: '/graph',
@@ -73,7 +142,7 @@ const routes = [
   {
     path: '/admin',
     name: 'admin',
-    component: AdminView,
+    component: SystemConfigView,
     meta: {
       roles: ['admin'],
     },
@@ -81,7 +150,7 @@ const routes = [
   {
     path: '/rules',
     name: 'rules',
-    component: AdminView,
+    component: SystemConfigView,
     meta: {
       roles: ['admin'],
     },
@@ -98,7 +167,7 @@ router.beforeEach((to) => {
   auth.restore()
 
   if (to.meta.public) {
-    return auth.isLogin ? '/' : true
+    return auth.isLogin ? '/workbench' : true
   }
 
   if (!auth.isLogin) {
@@ -112,7 +181,7 @@ router.beforeEach((to) => {
 
   const roles = to.meta.roles || []
   if (roles.length && !auth.hasRole(roles)) {
-    return '/'
+    return '/workbench'
   }
 
   return true

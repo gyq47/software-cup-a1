@@ -9,6 +9,7 @@ from backend.services.feedback_service import (
     review_feedback,
     submit_feedback,
 )
+from backend.services.tool_orchestrator_service import run_feedback_pipeline_trace
 
 router = APIRouter(prefix="/feedback", tags=["feedback"])
 
@@ -49,7 +50,10 @@ def pending() -> dict[str, list[dict[str, Any]]]:
 @router.post("/review")
 def review(request: FeedbackReviewRequest) -> dict[str, Any]:
     try:
-        return review_feedback(request.model_dump())
+        result = review_feedback(request.model_dump())
+        if result.get("status") == "approved":
+            result["tool_trace"] = run_feedback_pipeline_trace(result)
+        return result
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except Exception as exc:

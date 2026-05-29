@@ -11,8 +11,12 @@ const markdown = new MarkdownIt({
 })
 
 const input = ref('')
+const deviceModel = ref('')
 const loading = ref(false)
 const messageListRef = ref(null)
+const pagePreviewVisible = ref(false)
+const pagePreviewUrl = ref('')
+const pagePreviewTitle = ref('')
 const messages = ref([
   {
     role: 'assistant',
@@ -64,6 +68,11 @@ const sendMessage = async () => {
     role: 'assistant',
     content: 'AI正在分析设备故障...',
     contexts: [],
+    retrievalFilter: {},
+    graphContext: {},
+    graphEnabled: false,
+    graphWarnings: [],
+    toolTrace: [],
     pending: true,
   }
   messages.value.push(pendingMessage)
@@ -73,14 +82,24 @@ const sendMessage = async () => {
   await scrollToBottom()
 
   try {
-    const data = await sendChat(question, 5)
+    const data = await sendChat(question, 5, deviceModel.value)
     const answer = data.answer || '未获取到有效回答'
     pendingMessage.contexts = Array.isArray(data.contexts) ? data.contexts : []
+    pendingMessage.retrievalFilter = data.retrieval_filter || {}
+    pendingMessage.graphContext = data.graph_context || {}
+    pendingMessage.graphEnabled = Boolean(data.graph_enabled)
+    pendingMessage.graphWarnings = data.graph_warnings || []
+    pendingMessage.toolTrace = data.tool_trace || []
     await typeAnswer(pendingMessage, answer)
     pendingMessage.pending = false
   } catch (error) {
     pendingMessage.content = '后端服务连接失败'
     pendingMessage.contexts = []
+    pendingMessage.retrievalFilter = {}
+    pendingMessage.graphContext = {}
+    pendingMessage.graphEnabled = false
+    pendingMessage.graphWarnings = []
+    pendingMessage.toolTrace = []
     pendingMessage.pending = false
   } finally {
     loading.value = false
@@ -91,6 +110,41 @@ const sendMessage = async () => {
 const previewContent = (content) => {
   const text = String(content || '')
   return text.length > 200 ? `${text.slice(0, 200)}...` : text
+}
+
+const sourceLabel = (context) => (
+  context?.source_type === 'feedback_case'
+    ? '审核案例'
+    : context?.source_type === 'manual_image'
+      ? '手册图片'
+      : '维修手册'
+)
+const getPagePreviewUrl = (context) => {
+  const previewUrlValue = context?.preview_url || ''
+  if (previewUrlValue.startsWith('http')) {
+    return previewUrlValue
+  }
+  if (previewUrlValue.startsWith('/')) {
+    return `http://localhost:8000${previewUrlValue}`
+  }
+  if (context?.page_image_path) {
+    return `http://localhost:8000/api/manual/page-image?path=${encodeURIComponent(context.page_image_path)}`
+  }
+  return ''
+}
+const openPagePreview = (context) => {
+  const url = getPagePreviewUrl(context)
+  if (!url) return
+  pagePreviewUrl.value = url
+  pagePreviewTitle.value = `${context.pdf_filename || context.filename || '维修手册'} 第 ${context.page_number || context.page || '-'} 页`
+  pagePreviewVisible.value = true
+}
+
+const graphPaths = (message) => message.graphContext?.paths || []
+const toolStatusType = (status) => {
+  if (status === 'success') return 'success'
+  if (status === 'failed') return 'danger'
+  return 'info'
 }
 </script>
 
@@ -126,6 +180,59 @@ const previewContent = (content) => {
                 v-html="renderMarkdown(message.content)"
               />
 
+              <el-alert
+                v-if="message.retrievalFilter?.filter_fallback"
+                :title="message.retrievalFilter.filter_message"
+                type="warning"
+                :closable="false"
+                show-icon
+                class="filter-alert"
+              />
+
+              <div class="graph-context-section">
+                <div class="context-title">关联图谱路径</div>
+                <el-alert
+                  v-if="!message.graphEnabled"
+                  :title="message.graphWarnings?.[0] || '未匹配到关联图谱节点'"
+                  type="info"
+                  :closable="false"
+                  show-icon
+                />
+                <div v-else class="graph-path-list">
+                  <el-tag
+                    v-for="seed in message.graphContext?.seed_nodes || []"
+                    :key="seed.id"
+                    type="warning"
+                    effect="plain"
+                  >
+                    seed: {{ seed.name }}
+                  </el-tag>
+                  <div v-for="path in graphPaths(message)" :key="`${path.source}-${path.relation}-${path.target}`" class="graph-path-item">
+                    <strong>{{ path.source }}</strong>
+                    <el-tag size="small" type="primary">{{ path.relation }}</el-tag>
+                    <strong>{{ path.target }}</strong>
+                  </div>
+                </div>
+              </div>
+
+              <el-collapse v-if="message.toolTrace?.length" class="tool-trace-collapse">
+                <el-collapse-item title="工具链执行过程" :name="`trace-${index}`">
+                  <div class="tool-trace-list">
+                    <div v-for="tool in message.toolTrace" :key="tool.tool_name" class="tool-trace-item">
+                      <div>
+                        <strong>{{ tool.display_name }}</strong>
+                        <p>{{ tool.output_summary }}</p>
+                        <small v-if="tool.error">错误：{{ tool.error }}</small>
+                      </div>
+                      <div class="tool-trace-meta">
+                        <el-tag :type="toolStatusType(tool.status)" effect="plain">{{ tool.status }}</el-tag>
+                        <span>{{ tool.duration_ms || 0 }} ms</span>
+                      </div>
+                    </div>
+                  </div>
+                </el-collapse-item>
+              </el-collapse>
+
               <div
                 v-if="message.contexts && message.contexts.length > 0"
                 class="context-section"
@@ -139,12 +246,27 @@ const previewContent = (content) => {
                   >
                     <template #title>
                       <span class="context-header">
-                        {{ context.filename || '未知文件' }} · 第 {{ context.page || '-' }} 页
+                        {{ sourceLabel(context) }} · {{ context.filename || context.case_id || '未知来源' }} · 第 {{ context.page || '-' }} 页
+                        <span v-if="context.device_model"> · 来源设备：{{ context.device_model }}</span>
                       </span>
                     </template>
                     <p class="context-content">
                       {{ previewContent(context.content) }}
                     </p>
+                    <div class="context-actions">
+                      <el-button
+                        v-if="getPagePreviewUrl(context)"
+                        size="small"
+                        type="primary"
+                        plain
+                        @click="openPagePreview(context)"
+                      >
+                        查看原文页
+                      </el-button>
+                      <el-tag v-else-if="sourceLabel(context) === '审核案例'" type="success" effect="plain">
+                        经验案例，无 PDF 页截图
+                      </el-tag>
+                    </div>
                   </el-collapse-item>
                 </el-collapse>
               </div>
@@ -158,6 +280,12 @@ const previewContent = (content) => {
       </div>
 
       <div class="chat-input dark-chat-input">
+        <el-input
+          v-model="deviceModel"
+          placeholder="设备型号，可选，例如 SINUMERIK 828D"
+          :disabled="loading"
+          clearable
+        />
         <el-input
           v-model="input"
           type="textarea"
@@ -178,6 +306,9 @@ const previewContent = (content) => {
         </el-button>
       </div>
     </el-card>
+    <el-dialog v-model="pagePreviewVisible" :title="pagePreviewTitle" width="72%">
+      <img v-if="pagePreviewUrl" :src="pagePreviewUrl" class="page-preview-image" alt="维修手册原文页" />
+    </el-dialog>
   </section>
 </template>
 
@@ -212,6 +343,81 @@ const previewContent = (content) => {
 .assistant-answer {
   color: #172033;
   line-height: 1.8;
+}
+
+.context-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.page-preview-image {
+  width: 100%;
+  max-height: 78vh;
+  object-fit: contain;
+  background: #f8fafc;
+}
+
+.filter-alert {
+  margin: 12px 0;
+}
+
+.graph-context-section {
+  margin-top: 14px;
+}
+
+.graph-path-list {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid #dbeafe;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.graph-path-item {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  color: #334155;
+}
+
+.tool-trace-collapse {
+  margin-top: 12px;
+}
+
+.tool-trace-list {
+  display: grid;
+  gap: 8px;
+}
+
+.tool-trace-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px;
+  border: 1px solid #dbeafe;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.tool-trace-item p {
+  margin: 4px 0;
+  color: #475569;
+}
+
+.tool-trace-item small {
+  color: #dc2626;
+}
+
+.tool-trace-meta {
+  display: grid;
+  justify-items: end;
+  gap: 6px;
+  color: #64748b;
+  white-space: nowrap;
 }
 
 .markdown-answer :deep(h1),

@@ -68,12 +68,20 @@ def build_reference_payload(context: dict[str, Any]) -> dict[str, Any]:
     return {
         "filename": context.get("filename", ""),
         "page": context.get("page", ""),
+        "page_number": context.get("page_number", context.get("page", "")),
+        "pdf_filename": context.get("pdf_filename", context.get("filename", "")),
+        "page_image_path": context.get("page_image_path", ""),
+        "preview_available": bool(context.get("page_image_path") and context.get("source_type", "manual_text") != "feedback_case"),
+        "preview_url": context.get("preview_url", ""),
         "chunk_id": context.get("chunk_id", ""),
         "content": truncate_text(str(context.get("content", "")), MAX_REFERENCE_CONTENT_CHARS),
         "final_score": context.get("final_score", 0),
         "bm25_score": context.get("bm25_score", 0),
         "keyword_hits": context.get("keyword_hits", 0),
         "semantic_score": context.get("semantic_score", 0),
+        "source_type": context.get("source_type", "manual_text"),
+        "case_id": context.get("case_id", ""),
+        "device_model": context.get("device_model", ""),
     }
 
 

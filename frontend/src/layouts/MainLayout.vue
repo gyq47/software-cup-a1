@@ -1,14 +1,13 @@
 <script setup>
 import {
-  ChatDotRound,
-  Camera,
   DocumentAdd,
   EditPen,
-  House,
+  Files,
+  Share,
   Operation,
   Setting,
-  Search,
-  Share,
+  User,
+  WarningFilled,
 } from '@element-plus/icons-vue'
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -20,18 +19,23 @@ const router = useRouter()
 const auth = useAuthStore()
 
 const activeMenu = computed(() => route.path)
+const roleLabel = computed(() => {
+  if (auth.role === 'worker') return '检修人员'
+  if (auth.role === 'expert') return '设备工程师'
+  if (auth.role === 'admin') return '系统管理员'
+  return '未登录'
+})
+
 const menuItems = computed(() => {
   const items = [
-    { index: '/', label: '首页', icon: House, roles: ['worker', 'expert', 'admin'] },
-    { index: '/chat', label: '智能问答', icon: ChatDotRound, roles: ['worker', 'expert', 'admin'] },
-    { index: '/diagnosis', label: '多模态诊断', icon: Camera, roles: ['worker', 'expert', 'admin'] },
-    { index: '/workflow', label: '标准作业卡', icon: Operation, roles: ['worker', 'expert', 'admin'] },
-    { index: '/feedback', label: auth.atLeast('expert') ? '专家审核中心' : '知识审核闭环', icon: EditPen, roles: ['worker', 'expert', 'admin'] },
-    { index: '/upload', label: 'PDF上传', icon: DocumentAdd, roles: ['admin'] },
-    { index: '/search', label: '知识检索', icon: Search, roles: ['expert', 'admin'] },
+    { index: '/workbench', label: '工业检修工作台', icon: Operation, roles: ['worker', 'expert', 'admin'] },
+    { index: '/my-records', label: '我的检修记录', icon: Files, roles: ['worker'] },
+    { index: '/review', label: '知识审核与沉淀', icon: EditPen, roles: ['expert'] },
     { index: '/graph', label: '知识图谱', icon: Share, roles: ['expert', 'admin'] },
-    { index: '/rules', label: '规则管理', icon: Setting, roles: ['admin'] },
-    { index: '/admin', label: '系统管理', icon: Setting, roles: ['admin'] },
+    { index: '/manuals', label: '手册管理', icon: DocumentAdd, roles: ['expert', 'admin'] },
+    { index: '/users', label: '用户管理', icon: User, roles: ['admin'] },
+    { index: '/system', label: '系统配置', icon: Setting, roles: ['admin'] },
+    { index: '/diagnostics', label: '系统诊断', icon: WarningFilled, roles: ['admin'] },
   ]
   return items.filter((item) => item.roles.includes(auth.role))
 })
@@ -76,13 +80,13 @@ const handleLogout = async () => {
       <el-header class="topbar">
         <div>
           <div class="system-name">基于多模态大模型技术的设备检修知识检索与作业系统</div>
-          <div class="system-status">Backend API · Document Search · Repair Assistant</div>
+          <div class="system-status">工业检修工作台 · 知识沉淀 · LangChain RAG · 标准作业指导</div>
         </div>
         <div class="user-area">
           <el-avatar :size="34">{{ auth.display_name?.slice(0, 1) }}</el-avatar>
           <div class="user-meta">
             <strong>{{ auth.display_name }}</strong>
-            <el-tag size="small" type="info">{{ auth.role }}</el-tag>
+            <el-tag size="small" type="info">{{ roleLabel }}</el-tag>
           </div>
           <el-button size="small" @click="handleLogout">退出登录</el-button>
         </div>

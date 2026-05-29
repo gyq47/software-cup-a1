@@ -7,6 +7,8 @@ from openai import OpenAI, OpenAIError
 from backend.core.config import QWEN_API_KEY, QWEN_BASE_URL, QWEN_MODEL
 from backend.services.compliance_service import check_workflow_compliance
 from backend.services.context_cleaner import clean_contexts
+from backend.services.evidence_service import build_evidence_items
+from backend.services.lazy_graphrag_service import build_lazy_graph_context
 from backend.services.reference_service import attach_step_references
 from backend.services.vector_service import hybrid_search
 
@@ -25,16 +27,23 @@ DEFAULT_INSUFFICIENT_TEXT = "知识库依据不足"
 def generate_workflow_card(
     task: str,
     top_k: int = 5,
-) -> tuple[dict[str, Any], dict[str, Any], list[dict[str, Any]]]:
-    contexts = hybrid_search(task, top_k=top_k)
+    device_model: str | None = None,
+) -> tuple[dict[str, Any], dict[str, Any], list[dict[str, Any]], list[dict[str, Any]], dict[str, Any]]:
+    contexts = hybrid_search(task, top_k=top_k, device_model=device_model)
+    graph_context = build_lazy_graph_context(task, contexts, device_model=device_model)
     cleaned_contexts = clean_contexts(task, contexts)
-    workflow = normalize_workflow(request_workflow_from_qwen(task, cleaned_contexts), task)
+    workflow = normalize_workflow(request_workflow_from_qwen(task, cleaned_contexts, graph_context), task)
     workflow = attach_step_references(workflow, contexts)
     compliance_result = check_workflow_compliance(task, workflow)
-    return workflow, compliance_result, contexts
+    evidence_items = build_evidence_items(contexts)
+    return workflow, compliance_result, contexts, evidence_items, graph_context
 
 
-def request_workflow_from_qwen(task: str, contexts: list[dict[str, Any]]) -> dict[str, Any]:
+def request_workflow_from_qwen(
+    task: str,
+    contexts: list[dict[str, Any]],
+    graph_context: dict[str, Any] | None = None,
+) -> dict[str, Any]:
     if not QWEN_API_KEY:
         raise RuntimeError("QWEN_API_KEY 未配置")
 
@@ -53,7 +62,7 @@ def request_workflow_from_qwen(task: str, contexts: list[dict[str, Any]]) -> dic
                 },
                 {
                     "role": "user",
-                    "content": build_workflow_user_prompt(task, contexts),
+                    "content": build_workflow_user_prompt(task, contexts, graph_context),
                 },
             ],
             temperature=0.1,
@@ -72,7 +81,9 @@ def request_workflow_from_qwen(task: str, contexts: list[dict[str, Any]]) -> dic
 def build_workflow_system_prompt() -> str:
     return (
         "你是工业设备检修标准作业卡编制专家。"
-        "必须只依据给定知识库片段生成作业卡，不得编造扭矩、参数、工具、零件型号或工艺要求。"
+        "你只能依据给定维修手册上下文生成作业卡，不得使用常识补全。"
+        "不得编造手册没有的步骤、工具、扭矩、间隙、参数、故障原因、零件型号或工艺要求。"
+        "维修手册未明确提供该信息时，必须写“维修手册未明确提供该信息，不能作为标准作业依据”。"
         "如果某字段缺少依据，字段值写“知识库依据不足”。"
         "输出必须是合法 JSON，不要 Markdown，不要代码块，不要解释性文字。"
         "JSON 顶层必须包含 title、summary、tools、safety_notices、steps、final_check、references。"
@@ -82,7 +93,11 @@ def build_workflow_system_prompt() -> str:
     )
 
 
-def build_workflow_user_prompt(task: str, contexts: list[dict[str, Any]]) -> str:
+def build_workflow_user_prompt(
+    task: str,
+    contexts: list[dict[str, Any]],
+    graph_context: dict[str, Any] | None = None,
+) -> str:
     context_text = format_workflow_contexts(contexts)
     if not context_text:
         context_text = DEFAULT_INSUFFICIENT_TEXT
@@ -90,6 +105,7 @@ def build_workflow_user_prompt(task: str, contexts: list[dict[str, Any]]) -> str
     return (
         f"检修任务：{task}\n\n"
         f"知识库片段：\n{context_text}\n\n"
+        f"关联知识图谱上下文：\n{format_workflow_graph_context(graph_context)}\n\n"
         "请生成标准化作业卡 JSON，格式如下：\n"
         "{\n"
         '  "title": "离合器安装标准作业卡",\n'
@@ -131,6 +147,12 @@ def format_workflow_contexts(contexts: list[dict[str, Any]]) -> str:
             f"{content}"
         )
     return "\n\n".join(formatted)
+
+
+def format_workflow_graph_context(graph_context: dict[str, Any] | None) -> str:
+    if not graph_context or not graph_context.get("enabled"):
+        return "未匹配到可用关联图谱节点。"
+    return str(graph_context.get("graph_context_text") or "未匹配到可用关联图谱节点。")
 
 
 def parse_workflow_json(content: str) -> dict[str, Any]:

@@ -12,6 +12,7 @@ DEFAULT_VISION_RESULT = {
     "possible_faults": [],
     "visible_parts": [],
     "fault_codes": [],
+    "alarm_candidates": [],
     "device_model": "",
     "risk_level": "medium",
     "analysis_text": "图像信息不足，建议结合现场设备型号、报警代码和维修手册人工复核。",
@@ -76,6 +77,10 @@ def build_vision_system_prompt() -> str:
         "你是工业设备故障图片诊断专家，面向设备检修、故障排查和维修作业。"
         "只输出合法 JSON，不要 Markdown，不要聊天式寒暄。"
         "重点识别漏油、裂纹、烧蚀、松动、磨损、故障代码、仪表盘报警、零件名称、设备型号铭牌。"
+        "如果图片是报警日志、报警列表或 HMI 报警界面，必须提取所有可见报警候选，不要只提取一个。"
+        "每条报警候选尽量包含 code、text、confidence、is_current、reason。"
+        "如果无法判断是否当前故障，is_current=false，reason 写“需要用户确认”。"
+        "如果界面高亮、位于顶部、状态为未清除、红色报警或时间最新，可作为当前故障候选，is_current=true。"
         "如果图像无法判断，字段中明确写“图像信息不足”。"
         "risk_level 只能是 low、medium、high。"
     )
@@ -91,6 +96,7 @@ def build_vision_user_prompt(text: str | None, device_model: str | None) -> str:
         '"possible_faults":["..."],'
         '"visible_parts":["..."],'
         '"fault_codes":["..."],'
+        '"alarm_candidates":[{"code":"...","text":"...","source":"image","confidence":"low/medium/high","is_current":false,"reason":"..."}],'
         '"device_model":"...",'
         '"risk_level":"low/medium/high",'
         '"analysis_text":"..."'
@@ -119,12 +125,15 @@ def parse_json_object(content: str) -> dict[str, Any]:
 
 def normalize_vision_result(result: dict[str, Any]) -> dict[str, Any]:
     normalized = dict(DEFAULT_VISION_RESULT)
+    fault_codes = normalize_string_list(result.get("fault_codes"))
+    alarm_candidates = normalize_alarm_candidates(result.get("alarm_candidates"), fault_codes)
     normalized.update(
         {
             "scene": normalize_text(result.get("scene"), DEFAULT_VISION_RESULT["scene"]),
             "possible_faults": normalize_string_list(result.get("possible_faults")),
             "visible_parts": normalize_string_list(result.get("visible_parts")),
-            "fault_codes": normalize_string_list(result.get("fault_codes")),
+            "fault_codes": fault_codes,
+            "alarm_candidates": alarm_candidates,
             "device_model": normalize_text(result.get("device_model"), ""),
             "risk_level": normalize_risk_level(result.get("risk_level")),
             "analysis_text": normalize_text(result.get("analysis_text"), DEFAULT_VISION_RESULT["analysis_text"]),
@@ -139,6 +148,51 @@ def normalize_string_list(value: Any) -> list[str]:
     if isinstance(value, str) and value.strip() and value != "图像信息不足":
         return [value.strip()]
     return []
+
+
+def normalize_alarm_candidates(value: Any, fault_codes: list[str]) -> list[dict[str, Any]]:
+    candidates: list[dict[str, Any]] = []
+
+    if isinstance(value, list):
+        for item in value:
+            if isinstance(item, dict):
+                code = normalize_text(item.get("code"), "")
+                text = normalize_text(item.get("text"), "")
+                if not code and not text:
+                    continue
+                candidates.append(
+                    {
+                        "code": code,
+                        "text": text,
+                        "source": normalize_text(item.get("source"), "image"),
+                        "confidence": normalize_confidence(item.get("confidence")),
+                        "is_current": bool(item.get("is_current", False)),
+                        "reason": normalize_text(item.get("reason"), "需要用户确认"),
+                    }
+                )
+            elif isinstance(item, str) and item.strip():
+                candidates.append(build_alarm_candidate_from_code(item.strip()))
+
+    if candidates:
+        return candidates
+
+    return [build_alarm_candidate_from_code(code) for code in fault_codes]
+
+
+def build_alarm_candidate_from_code(code: str) -> dict[str, Any]:
+    return {
+        "code": code,
+        "text": "",
+        "source": "image",
+        "confidence": "medium",
+        "is_current": False,
+        "reason": "由 fault_codes 自动生成，需用户确认",
+    }
+
+
+def normalize_confidence(value: Any) -> str:
+    confidence = str(value or "").lower()
+    return confidence if confidence in {"low", "medium", "high"} else "medium"
 
 
 def normalize_text(value: Any, default: str) -> str:

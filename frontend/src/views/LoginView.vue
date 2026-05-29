@@ -21,8 +21,8 @@ const form = reactive({
 
 const roleOptions = [
   { label: '检修人员（worker）', value: 'worker' },
-  { label: '专家（expert）', value: 'expert' },
-  { label: '管理员（admin）', value: 'admin' },
+  { label: '设备工程师（expert）', value: 'expert' },
+  { label: '系统管理员（admin）', value: 'admin' },
 ]
 
 const refreshCaptcha = () => {
@@ -139,11 +139,11 @@ onMounted(() => {
             <p>现场检修、故障诊断、作业执行、提交修正。</p>
           </el-card>
           <el-card shadow="never">
-            <strong>expert · 专家</strong>
+            <strong>expert · 设备工程师</strong>
             <p>知识审核、经验沉淀、案例审核、查看知识图谱。</p>
           </el-card>
           <el-card shadow="never">
-            <strong>admin · 管理员</strong>
+            <strong>admin · 系统管理员</strong>
             <p>系统配置、规则管理、模型管理、用户管理展示。</p>
           </el-card>
         </div>

@@ -1,0 +1,937 @@
+{
+  "metadata": {
+    "version": "0.1.0",
+    "description": "轻量工业检修知识图谱"
+  },
+  "nodes": [
+    {
+      "id": "device_808d",
+      "name": "SINUMERIK 808D",
+      "type": "device",
+      "description": "西门子 808D 数控系统。",
+      "device_model": "SINUMERIK 808D",
+      "metadata": {}
+    },
+    {
+      "id": "device_828d",
+      "name": "SINUMERIK 828D",
+      "type": "device",
+      "description": "西门子 828D 数控系统。",
+      "device_model": "SINUMERIK 828D",
+      "metadata": {}
+    },
+    {
+      "id": "device_s120",
+      "name": "SINAMICS S120",
+      "type": "device",
+      "description": "828D 常见配套驱动系统。",
+      "device_model": "SINUMERIK 828D",
+      "metadata": {}
+    },
+    {
+      "id": "manual_828d_alarm",
+      "name": "828D 报警诊断手册",
+      "type": "manual",
+      "description": "SINUMERIK 828D 报警诊断依据。",
+      "device_model": "SINUMERIK 828D",
+      "metadata": {}
+    },
+    {
+      "id": "manual_828d_s120_alarm",
+      "name": "828D S120 报警诊断手册",
+      "type": "manual",
+      "description": "SINAMICS S120 驱动报警诊断依据。",
+      "device_model": "SINUMERIK 828D",
+      "metadata": {}
+    },
+    {
+      "id": "fault_axis_ref",
+      "name": "轴无法回零",
+      "type": "fault",
+      "description": "轴不能到达参考点或回参考点失败。",
+      "device_model": "common",
+      "metadata": {}
+    },
+    {
+      "id": "fault_spindle",
+      "name": "主轴异常",
+      "type": "fault",
+      "description": "主轴启动、转速、报警或运行状态异常。",
+      "device_model": "common",
+      "metadata": {}
+    },
+    {
+      "id": "fault_motor_overheat",
+      "name": "电机过热",
+      "type": "fault",
+      "description": "电机或驱动温度异常升高。",
+      "device_model": "common",
+      "metadata": {}
+    },
+    {
+      "id": "cause_ref_switch",
+      "name": "回零开关异常",
+      "type": "cause",
+      "description": "参考点开关、减速凸轮或相关信号异常。",
+      "device_model": "common",
+      "metadata": {}
+    },
+    {
+      "id": "cause_plc_input",
+      "name": "PLC 输入信号异常",
+      "type": "cause",
+      "description": "PLC 输入点未按预期变化。",
+      "device_model": "common",
+      "metadata": {}
+    },
+    {
+      "id": "cause_servo_enable",
+      "name": "伺服驱动未使能",
+      "type": "cause",
+      "description": "驱动未就绪、未使能或安全链路未闭合。",
+      "device_model": "common",
+      "metadata": {}
+    },
+    {
+      "id": "cause_encoder",
+      "name": "编码器异常",
+      "type": "cause",
+      "description": "编码器反馈、连接或参数异常。",
+      "device_model": "common",
+      "metadata": {}
+    },
+    {
+      "id": "cause_estop",
+      "name": "急停回路异常",
+      "type": "cause",
+      "description": "急停、安全联锁或安全回路未复位。",
+      "device_model": "common",
+      "metadata": {}
+    },
+    {
+      "id": "cause_parameter",
+      "name": "参数设置错误",
+      "type": "cause",
+      "description": "机床数据、轴参数或回零相关参数设置错误。",
+      "device_model": "common",
+      "metadata": {}
+    },
+    {
+      "id": "solution_alarm_reset",
+      "name": "报警复位",
+      "type": "solution",
+      "description": "排除故障后执行报警复位并低速验证。",
+      "device_model": "common",
+      "metadata": {}
+    },
+    {
+      "id": "risk_power",
+      "name": "停机断电确认",
+      "type": "risk",
+      "description": "检修前执行停机、断电、挂牌和防误启动确认。",
+      "device_model": "common",
+      "metadata": {}
+    },
+    {
+      "id": "step_check_ref_switch",
+      "name": "检查回零开关与减速凸轮",
+      "type": "workflow_step",
+      "description": "检查参考点开关动作、线缆和安装位置。",
+      "device_model": "common",
+      "metadata": {}
+    },
+    {
+      "id": "step_check_plc",
+      "name": "检查 PLC 输入信号",
+      "type": "workflow_step",
+      "description": "观察 PLC 输入点与诊断界面信号状态。",
+      "device_model": "common",
+      "metadata": {}
+    },
+    {
+      "id": "step_check_drive",
+      "name": "检查伺服驱动状态",
+      "type": "workflow_step",
+      "description": "确认驱动就绪、使能、报警和安全状态。",
+      "device_model": "common",
+      "metadata": {}
+    },
+    {
+      "id": "step_check_encoder",
+      "name": "检查编码器反馈",
+      "type": "workflow_step",
+      "description": "确认编码器连接、反馈和相关参数。",
+      "device_model": "common",
+      "metadata": {}
+    },
+    {
+      "id": "alarm_20000",
+      "name": "报警 20000",
+      "type": "alarm",
+      "description": "808D 参考点相关报警测试节点。",
+      "device_model": "SINUMERIK 808D",
+      "metadata": {}
+    },
+    {
+      "id": "alarm_s120_drive",
+      "name": "S120 驱动报警",
+      "type": "alarm",
+      "description": "828D/S120 驱动报警诊断入口。",
+      "device_model": "SINUMERIK 828D",
+      "metadata": {}
+    },
+    {
+      "id": "kg_node_c13349629bcc",
+      "name": "轴无法回零",
+      "type": "fault",
+      "description": "数控系统中轴运动后无法返回参考点的故障现象",
+      "device_model": "SINUMERIK 828D",
+      "metadata": {
+        "source": "test_sample",
+        "source_type": "manual_chunk"
+      }
+    },
+    {
+      "id": "kg_node_8c85f8a4b6de",
+      "name": "回零开关异常",
+      "type": "cause",
+      "description": "回零开关物理损坏、松动或信号接触不良导致无法正确触发",
+      "device_model": "SINUMERIK 828D",
+      "metadata": {
+        "source": "test_sample",
+        "source_type": "manual_chunk"
+      }
+    },
+    {
+      "id": "kg_node_f7d8227c7f92",
+      "name": "PLC 输入信号异常",
+      "type": "cause",
+      "description": "PLC未接收到预期的回零开关输入信号，可能因线路断开、端子松动或信号电平异常",
+      "device_model": "SINUMERIK 828D",
+      "metadata": {
+        "source": "test_sample",
+        "source_type": "manual_chunk"
+      }
+    },
+    {
+      "id": "kg_node_a119618e8083",
+      "name": "伺服驱动未使能",
+      "type": "cause",
+      "description": "伺服驱动器未被系统使能，导致轴无法响应回零指令",
+      "device_model": "SINUMERIK 828D",
+      "metadata": {
+        "source": "test_sample",
+        "source_type": "manual_chunk"
+      }
+    },
+    {
+      "id": "kg_node_37a7e0efb16b",
+      "name": "编码器异常",
+      "type": "cause",
+      "description": "编码器信号丢失、干扰或硬件故障，影响位置反馈与回零判断",
+      "device_model": "SINUMERIK 828D",
+      "metadata": {
+        "source": "test_sample",
+        "source_type": "manual_chunk"
+      }
+    },
+    {
+      "id": "kg_node_4ad404a16356",
+      "name": "急停回路",
+      "type": "component",
+      "description": "保障设备安全的硬线保护回路，触发时强制切断伺服使能和运动指令",
+      "device_model": "SINUMERIK 828D",
+      "metadata": {
+        "source": "test_sample",
+        "source_type": "manual_chunk"
+      }
+    },
+    {
+      "id": "kg_node_0042ea19ad0b",
+      "name": "安全联锁状态",
+      "type": "parameter",
+      "description": "反映机床安全门、防护罩等联锁装置是否满足运行条件的状态信号",
+      "device_model": "SINUMERIK 828D",
+      "metadata": {
+        "source": "test_sample",
+        "source_type": "manual_chunk"
+      }
+    },
+    {
+      "id": "kg_node_bae392e5eec4",
+      "name": "回零开关信号",
+      "type": "plc_signal",
+      "description": "由回零开关产生的输入至PLC的数字量信号（如I0.0），用于识别零点位置",
+      "device_model": "SINUMERIK 828D",
+      "metadata": {
+        "source": "test_sample",
+        "source_type": "manual_chunk"
+      }
+    },
+    {
+      "id": "kg_node_001b7502a9dc",
+      "name": "报警复位",
+      "type": "workflow_step",
+      "description": "通过HMI或操作面板执行清除当前报警状态的操作，为后续测试准备条件",
+      "device_model": "SINUMERIK 828D",
+      "metadata": {
+        "source": "test_sample",
+        "source_type": "manual_chunk"
+      }
+    },
+    {
+      "id": "kg_node_941170c1c816",
+      "name": "参数确认",
+      "type": "workflow_step",
+      "description": "核查与回零功能相关的关键参数（如34000、34010、34020等）设置是否正确",
+      "device_model": "SINUMERIK 828D",
+      "metadata": {
+        "source": "test_sample",
+        "source_type": "manual_chunk"
+      }
+    },
+    {
+      "id": "kg_node_89ffa6db60ce",
+      "name": "检修时应先检查急停回路和安全联锁状态",
+      "type": "workflow_step",
+      "description": "",
+      "device_model": "SINUMERIK 828D",
+      "metadata": {
+        "source": "test_sample",
+        "source_type": "manual_chunk",
+        "auto_created_from_triple": true
+      }
+    },
+    {
+      "id": "kg_node_337250f2fb52",
+      "name": "再检查回零开关信号是否进入 PLC",
+      "type": "workflow_step",
+      "description": "",
+      "device_model": "SINUMERIK 828D",
+      "metadata": {
+        "source": "test_sample",
+        "source_type": "manual_chunk",
+        "auto_created_from_triple": true
+      }
+    },
+    {
+      "id": "kg_node_f4f01fc02850",
+      "name": "轴回零动作",
+      "type": "fault",
+      "description": "",
+      "device_model": "SINUMERIK 828D",
+      "metadata": {
+        "source": "test_sample",
+        "source_type": "manual_chunk",
+        "auto_created_from_triple": true
+      }
+    },
+    {
+      "id": "kg_node_d7bbbe33ce51",
+      "name": "轴位置反馈",
+      "type": "fault",
+      "description": "",
+      "device_model": "SINUMERIK 828D",
+      "metadata": {
+        "source": "test_sample",
+        "source_type": "manual_chunk",
+        "auto_created_from_triple": true
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e_808d_alarm20000",
+      "source": "alarm_20000",
+      "target": "device_808d",
+      "relation": "belongs_to",
+      "weight": 1.0,
+      "evidence": "808D 报警归属。",
+      "source_label": "初始化工业检修知识",
+      "device_model": "SINUMERIK 808D",
+      "metadata": {}
+    },
+    {
+      "id": "e_828d_s120_alarm",
+      "source": "alarm_s120_drive",
+      "target": "device_s120",
+      "relation": "belongs_to",
+      "weight": 1.0,
+      "evidence": "S120 驱动报警归属。",
+      "source_label": "初始化工业检修知识",
+      "device_model": "SINUMERIK 828D",
+      "metadata": {}
+    },
+    {
+      "id": "e_s120_828d",
+      "source": "device_s120",
+      "target": "device_828d",
+      "relation": "related_to",
+      "weight": 1.0,
+      "evidence": "S120 与 828D 集成使用。",
+      "source_label": "初始化工业检修知识",
+      "device_model": "SINUMERIK 828D",
+      "metadata": {}
+    },
+    {
+      "id": "e_manual_828d_device",
+      "source": "manual_828d_alarm",
+      "target": "device_828d",
+      "relation": "belongs_to",
+      "weight": 1.0,
+      "evidence": "828D 报警诊断手册适用于 828D。",
+      "source_label": "初始化工业检修知识",
+      "device_model": "SINUMERIK 828D",
+      "metadata": {}
+    },
+    {
+      "id": "e_manual_s120_device",
+      "source": "manual_828d_s120_alarm",
+      "target": "device_s120",
+      "relation": "belongs_to",
+      "weight": 1.0,
+      "evidence": "S120 报警诊断手册适用于 S120。",
+      "source_label": "初始化工业检修知识",
+      "device_model": "SINUMERIK 828D",
+      "metadata": {}
+    },
+    {
+      "id": "e_axis_ref_switch",
+      "source": "cause_ref_switch",
+      "target": "fault_axis_ref",
+      "relation": "causes",
+      "weight": 1.0,
+      "evidence": "回零开关或减速凸轮异常会导致回零失败。",
+      "source_label": "初始化工业检修知识",
+      "device_model": "common",
+      "metadata": {}
+    },
+    {
+      "id": "e_axis_plc",
+      "source": "cause_plc_input",
+      "target": "fault_axis_ref",
+      "relation": "causes",
+      "weight": 1.0,
+      "evidence": "PLC 输入信号异常会影响回参考点判断。",
+      "source_label": "初始化工业检修知识",
+      "device_model": "common",
+      "metadata": {}
+    },
+    {
+      "id": "e_axis_servo",
+      "source": "cause_servo_enable",
+      "target": "fault_axis_ref",
+      "relation": "causes",
+      "weight": 1.0,
+      "evidence": "伺服未使能时轴无法正常运动。",
+      "source_label": "初始化工业检修知识",
+      "device_model": "common",
+      "metadata": {}
+    },
+    {
+      "id": "e_axis_encoder",
+      "source": "cause_encoder",
+      "target": "fault_axis_ref",
+      "relation": "causes",
+      "weight": 1.0,
+      "evidence": "编码器反馈异常会影响位置闭环和参考点。",
+      "source_label": "初始化工业检修知识",
+      "device_model": "common",
+      "metadata": {}
+    },
+    {
+      "id": "e_axis_estop",
+      "source": "cause_estop",
+      "target": "fault_axis_ref",
+      "relation": "causes",
+      "weight": 1.0,
+      "evidence": "急停回路异常会阻止轴运动。",
+      "source_label": "初始化工业检修知识",
+      "device_model": "common",
+      "metadata": {}
+    },
+    {
+      "id": "e_axis_param",
+      "source": "cause_parameter",
+      "target": "fault_axis_ref",
+      "relation": "causes",
+      "weight": 1.0,
+      "evidence": "回零参数设置错误会导致参考点流程异常。",
+      "source_label": "初始化工业检修知识",
+      "device_model": "common",
+      "metadata": {}
+    },
+    {
+      "id": "e_alarm20000_axis",
+      "source": "alarm_20000",
+      "target": "fault_axis_ref",
+      "relation": "affects",
+      "weight": 1.0,
+      "evidence": "报警 20000 与轴参考点问题关联。",
+      "source_label": "初始化工业检修知识",
+      "device_model": "SINUMERIK 808D",
+      "metadata": {}
+    },
+    {
+      "id": "e_s120_motor_overheat",
+      "source": "alarm_s120_drive",
+      "target": "fault_motor_overheat",
+      "relation": "affects",
+      "weight": 1.0,
+      "evidence": "S120 驱动报警可关联电机过热。",
+      "source_label": "初始化工业检修知识",
+      "device_model": "SINUMERIK 828D",
+      "metadata": {}
+    },
+    {
+      "id": "e_s120_spindle",
+      "source": "alarm_s120_drive",
+      "target": "fault_spindle",
+      "relation": "affects",
+      "weight": 1.0,
+      "evidence": "S120 驱动报警可影响主轴运行。",
+      "source_label": "初始化工业检修知识",
+      "device_model": "SINUMERIK 828D",
+      "metadata": {}
+    },
+    {
+      "id": "e_check_ref",
+      "source": "step_check_ref_switch",
+      "target": "cause_ref_switch",
+      "relation": "checks",
+      "weight": 1.0,
+      "evidence": "现场检查参考点开关和减速凸轮。",
+      "source_label": "初始化工业检修知识",
+      "device_model": "common",
+      "metadata": {}
+    },
+    {
+      "id": "e_check_plc",
+      "source": "step_check_plc",
+      "target": "cause_plc_input",
+      "relation": "checks",
+      "weight": 1.0,
+      "evidence": "通过 PLC 输入状态排查信号异常。",
+      "source_label": "初始化工业检修知识",
+      "device_model": "common",
+      "metadata": {}
+    },
+    {
+      "id": "e_check_drive",
+      "source": "step_check_drive",
+      "target": "cause_servo_enable",
+      "relation": "checks",
+      "weight": 1.0,
+      "evidence": "检查驱动就绪和使能状态。",
+      "source_label": "初始化工业检修知识",
+      "device_model": "common",
+      "metadata": {}
+    },
+    {
+      "id": "e_check_encoder",
+      "source": "step_check_encoder",
+      "target": "cause_encoder",
+      "relation": "checks",
+      "weight": 1.0,
+      "evidence": "检查编码器反馈链路。",
+      "source_label": "初始化工业检修知识",
+      "device_model": "common",
+      "metadata": {}
+    },
+    {
+      "id": "e_reset_axis",
+      "source": "solution_alarm_reset",
+      "target": "fault_axis_ref",
+      "relation": "solves",
+      "weight": 1.0,
+      "evidence": "故障排除后复位报警并试运行。",
+      "source_label": "初始化工业检修知识",
+      "device_model": "common",
+      "metadata": {}
+    },
+    {
+      "id": "e_risk_ref",
+      "source": "risk_power",
+      "target": "step_check_ref_switch",
+      "relation": "prevents",
+      "weight": 1.0,
+      "evidence": "机械和信号检查前必须停机断电。",
+      "source_label": "初始化工业检修知识",
+      "device_model": "common",
+      "metadata": {}
+    },
+    {
+      "id": "e_risk_drive",
+      "source": "risk_power",
+      "target": "step_check_drive",
+      "relation": "prevents",
+      "weight": 1.0,
+      "evidence": "驱动检查前确认安全状态。",
+      "source_label": "初始化工业检修知识",
+      "device_model": "common",
+      "metadata": {}
+    },
+    {
+      "id": "e_manual_828d_alarm",
+      "source": "manual_828d_alarm",
+      "target": "alarm_s120_drive",
+      "relation": "related_to",
+      "weight": 1.0,
+      "evidence": "828D 报警诊断手册提供报警解释。",
+      "source_label": "初始化工业检修知识",
+      "device_model": "SINUMERIK 828D",
+      "metadata": {}
+    },
+    {
+      "id": "e_manual_s120_alarm",
+      "source": "manual_828d_s120_alarm",
+      "target": "alarm_s120_drive",
+      "relation": "related_to",
+      "weight": 1.0,
+      "evidence": "S120 手册提供驱动报警依据。",
+      "source_label": "初始化工业检修知识",
+      "device_model": "SINUMERIK 828D",
+      "metadata": {}
+    },
+    {
+      "id": "kg_edge_6d218b6d6669",
+      "source": "cause_ref_switch",
+      "target": "fault_axis_ref",
+      "relation": "causes",
+      "weight": 0.9,
+      "evidence": "轴无法回零通常可能与回零开关异常、PLC 输入信号异常、伺服驱动未使能或编码器异常有关。",
+      "source_label": "test_sample",
+      "device_model": "SINUMERIK 828D",
+      "metadata": {
+        "source": "test_sample",
+        "source_type": "manual_chunk",
+        "confidence": 0.9,
+        "subject": "回零开关异常",
+        "object": "轴无法回零"
+      }
+    },
+    {
+      "id": "kg_edge_d96aeeca4bd1",
+      "source": "cause_plc_input",
+      "target": "fault_axis_ref",
+      "relation": "causes",
+      "weight": 0.9,
+      "evidence": "轴无法回零通常可能与回零开关异常、PLC 输入信号异常、伺服驱动未使能或编码器异常有关。",
+      "source_label": "test_sample",
+      "device_model": "SINUMERIK 828D",
+      "metadata": {
+        "source": "test_sample",
+        "source_type": "manual_chunk",
+        "confidence": 0.9,
+        "subject": "PLC 输入信号异常",
+        "object": "轴无法回零"
+      }
+    },
+    {
+      "id": "kg_edge_f4151b180eaa",
+      "source": "cause_servo_enable",
+      "target": "fault_axis_ref",
+      "relation": "causes",
+      "weight": 0.9,
+      "evidence": "轴无法回零通常可能与回零开关异常、PLC 输入信号异常、伺服驱动未使能或编码器异常有关。",
+      "source_label": "test_sample",
+      "device_model": "SINUMERIK 828D",
+      "metadata": {
+        "source": "test_sample",
+        "source_type": "manual_chunk",
+        "confidence": 0.9,
+        "subject": "伺服驱动未使能",
+        "object": "轴无法回零"
+      }
+    },
+    {
+      "id": "kg_edge_65d06e014cca",
+      "source": "cause_encoder",
+      "target": "fault_axis_ref",
+      "relation": "causes",
+      "weight": 0.9,
+      "evidence": "轴无法回零通常可能与回零开关异常、PLC 输入信号异常、伺服驱动未使能或编码器异常有关。",
+      "source_label": "test_sample",
+      "device_model": "SINUMERIK 828D",
+      "metadata": {
+        "source": "test_sample",
+        "source_type": "manual_chunk",
+        "confidence": 0.9,
+        "subject": "编码器异常",
+        "object": "轴无法回零"
+      }
+    },
+    {
+      "id": "kg_edge_55b6ba631e10",
+      "source": "kg_node_89ffa6db60ce",
+      "target": "kg_node_4ad404a16356",
+      "relation": "checks",
+      "weight": 0.95,
+      "evidence": "检修时应先检查急停回路和安全联锁状态",
+      "source_label": "test_sample",
+      "device_model": "SINUMERIK 828D",
+      "metadata": {
+        "source": "test_sample",
+        "source_type": "manual_chunk",
+        "confidence": 0.95,
+        "subject": "检修时应先检查急停回路和安全联锁状态",
+        "object": "急停回路"
+      }
+    },
+    {
+      "id": "kg_edge_d6ed40a245ff",
+      "source": "kg_node_89ffa6db60ce",
+      "target": "kg_node_0042ea19ad0b",
+      "relation": "checks",
+      "weight": 0.95,
+      "evidence": "检修时应先检查急停回路和安全联锁状态",
+      "source_label": "test_sample",
+      "device_model": "SINUMERIK 828D",
+      "metadata": {
+        "source": "test_sample",
+        "source_type": "manual_chunk",
+        "confidence": 0.95,
+        "subject": "检修时应先检查急停回路和安全联锁状态",
+        "object": "安全联锁状态"
+      }
+    },
+    {
+      "id": "kg_edge_56d7264bd6a0",
+      "source": "kg_node_337250f2fb52",
+      "target": "kg_node_bae392e5eec4",
+      "relation": "checks",
+      "weight": 0.95,
+      "evidence": "再检查回零开关信号是否进入 PLC",
+      "source_label": "test_sample",
+      "device_model": "SINUMERIK 828D",
+      "metadata": {
+        "source": "test_sample",
+        "source_type": "manual_chunk",
+        "confidence": 0.95,
+        "subject": "再检查回零开关信号是否进入 PLC",
+        "object": "回零开关信号"
+      }
+    },
+    {
+      "id": "kg_edge_99d8b243f661",
+      "source": "kg_node_bae392e5eec4",
+      "target": "device_828d",
+      "relation": "belongs_to",
+      "weight": 0.85,
+      "evidence": "再检查回零开关信号是否进入 PLC",
+      "source_label": "test_sample",
+      "device_model": "SINUMERIK 828D",
+      "metadata": {
+        "source": "test_sample",
+        "source_type": "manual_chunk",
+        "confidence": 0.85,
+        "subject": "回零开关信号",
+        "object": "SINUMERIK 828D"
+      }
+    },
+    {
+      "id": "kg_edge_f2c2fb0fa4f0",
+      "source": "kg_node_4ad404a16356",
+      "target": "device_828d",
+      "relation": "belongs_to",
+      "weight": 0.85,
+      "evidence": "检修时应先检查急停回路和安全联锁状态",
+      "source_label": "test_sample",
+      "device_model": "SINUMERIK 828D",
+      "metadata": {
+        "source": "test_sample",
+        "source_type": "manual_chunk",
+        "confidence": 0.85,
+        "subject": "急停回路",
+        "object": "SINUMERIK 828D"
+      }
+    },
+    {
+      "id": "kg_edge_5178fcea4b16",
+      "source": "kg_node_0042ea19ad0b",
+      "target": "device_828d",
+      "relation": "belongs_to",
+      "weight": 0.85,
+      "evidence": "检修时应先检查急停回路和安全联锁状态",
+      "source_label": "test_sample",
+      "device_model": "SINUMERIK 828D",
+      "metadata": {
+        "source": "test_sample",
+        "source_type": "manual_chunk",
+        "confidence": 0.85,
+        "subject": "安全联锁状态",
+        "object": "SINUMERIK 828D"
+      }
+    },
+    {
+      "id": "kg_edge_e3b3115fdd57",
+      "source": "solution_alarm_reset",
+      "target": "fault_axis_ref",
+      "relation": "solves",
+      "weight": 0.7,
+      "evidence": "必要时进行报警复位和参数确认。",
+      "source_label": "test_sample",
+      "device_model": "SINUMERIK 828D",
+      "metadata": {
+        "source": "test_sample",
+        "source_type": "manual_chunk",
+        "confidence": 0.7,
+        "subject": "报警复位",
+        "object": "轴无法回零"
+      }
+    },
+    {
+      "id": "kg_edge_b311c1319b5b",
+      "source": "kg_node_941170c1c816",
+      "target": "fault_axis_ref",
+      "relation": "solves",
+      "weight": 0.75,
+      "evidence": "必要时进行报警复位和参数确认。",
+      "source_label": "test_sample",
+      "device_model": "SINUMERIK 828D",
+      "metadata": {
+        "source": "test_sample",
+        "source_type": "manual_chunk",
+        "confidence": 0.75,
+        "subject": "参数确认",
+        "object": "轴无法回零"
+      }
+    },
+    {
+      "id": "kg_edge_8c0a852cb180",
+      "source": "solution_alarm_reset",
+      "target": "device_828d",
+      "relation": "requires",
+      "weight": 0.8,
+      "evidence": "必要时进行报警复位和参数确认。",
+      "source_label": "test_sample",
+      "device_model": "SINUMERIK 828D",
+      "metadata": {
+        "source": "test_sample",
+        "source_type": "manual_chunk",
+        "confidence": 0.8,
+        "subject": "报警复位",
+        "object": "SINUMERIK 828D"
+      }
+    },
+    {
+      "id": "kg_edge_5fd17e0c8e3c",
+      "source": "kg_node_941170c1c816",
+      "target": "device_828d",
+      "relation": "requires",
+      "weight": 0.8,
+      "evidence": "必要时进行报警复位和参数确认。",
+      "source_label": "test_sample",
+      "device_model": "SINUMERIK 828D",
+      "metadata": {
+        "source": "test_sample",
+        "source_type": "manual_chunk",
+        "confidence": 0.8,
+        "subject": "参数确认",
+        "object": "SINUMERIK 828D"
+      }
+    },
+    {
+      "id": "kg_edge_049ca98fd4f8",
+      "source": "cause_ref_switch",
+      "target": "kg_node_bae392e5eec4",
+      "relation": "affects",
+      "weight": 0.85,
+      "evidence": "轴无法回零通常可能与回零开关异常、PLC 输入信号异常、伺服驱动未使能或编码器异常有关。",
+      "source_label": "test_sample",
+      "device_model": "SINUMERIK 828D",
+      "metadata": {
+        "source": "test_sample",
+        "source_type": "manual_chunk",
+        "confidence": 0.85,
+        "subject": "回零开关异常",
+        "object": "回零开关信号"
+      }
+    },
+    {
+      "id": "kg_edge_af965dfe49b6",
+      "source": "cause_plc_input",
+      "target": "kg_node_bae392e5eec4",
+      "relation": "affects",
+      "weight": 0.85,
+      "evidence": "轴无法回零通常可能与回零开关异常、PLC 输入信号异常、伺服驱动未使能或编码器异常有关。",
+      "source_label": "test_sample",
+      "device_model": "SINUMERIK 828D",
+      "metadata": {
+        "source": "test_sample",
+        "source_type": "manual_chunk",
+        "confidence": 0.85,
+        "subject": "PLC 输入信号异常",
+        "object": "回零开关信号"
+      }
+    },
+    {
+      "id": "kg_edge_558ac04547f1",
+      "source": "cause_servo_enable",
+      "target": "kg_node_f4f01fc02850",
+      "relation": "prevents",
+      "weight": 0.8,
+      "evidence": "轴无法回零通常可能与回零开关异常、PLC 输入信号异常、伺服驱动未使能或编码器异常有关。",
+      "source_label": "test_sample",
+      "device_model": "SINUMERIK 828D",
+      "metadata": {
+        "source": "test_sample",
+        "source_type": "manual_chunk",
+        "confidence": 0.8,
+        "subject": "伺服驱动未使能",
+        "object": "轴回零动作"
+      }
+    },
+    {
+      "id": "kg_edge_fab100b60e58",
+      "source": "cause_encoder",
+      "target": "kg_node_d7bbbe33ce51",
+      "relation": "affects",
+      "weight": 0.8,
+      "evidence": "轴无法回零通常可能与回零开关异常、PLC 输入信号异常、伺服驱动未使能或编码器异常有关。",
+      "source_label": "test_sample",
+      "device_model": "SINUMERIK 828D",
+      "metadata": {
+        "source": "test_sample",
+        "source_type": "manual_chunk",
+        "confidence": 0.8,
+        "subject": "编码器异常",
+        "object": "轴位置反馈"
+      }
+    },
+    {
+      "id": "kg_edge_293189b81132",
+      "source": "kg_node_4ad404a16356",
+      "target": "kg_node_0042ea19ad0b",
+      "relation": "related_to",
+      "weight": 0.75,
+      "evidence": "检修时应先检查急停回路和安全联锁状态",
+      "source_label": "test_sample",
+      "device_model": "SINUMERIK 828D",
+      "metadata": {
+        "source": "test_sample",
+        "source_type": "manual_chunk",
+        "confidence": 0.75,
+        "subject": "急停回路",
+        "object": "安全联锁状态"
+      }
+    },
+    {
+      "id": "kg_edge_3261d45e9db9",
+      "source": "fault_axis_ref",
+      "target": "device_828d",
+      "relation": "related_to",
+      "weight": 0.9,
+      "evidence": "轴无法回零通常可能与回零开关异常、PLC 输入信号异常、伺服驱动未使能或编码器异常有关。",
+      "source_label": "test_sample",
+      "device_model": "SINUMERIK 828D",
+      "metadata": {
+        "source": "test_sample",
+        "source_type": "manual_chunk",
+        "confidence": 0.9,
+        "subject": "轴无法回零",
+        "object": "SINUMERIK 828D"
+      }
+    }
+  ]
+}

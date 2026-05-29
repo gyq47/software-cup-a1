@@ -5,9 +5,11 @@ from backend.api.auth import router as auth_router
 from backend.api.chat import router as chat_router
 from backend.api.diagnosis import router as diagnosis_router
 from backend.api.feedback import router as feedback_router
+from backend.api.graph import router as graph_router
 from backend.api.health import router as health_router
 from backend.api.manual import router as manual_router
 from backend.api.search import router as search_router
+from backend.api.system import router as system_router
 from backend.api.workflow import router as workflow_router
 from backend.core.config import API_PREFIX, PROJECT_NAME
 
@@ -32,6 +34,8 @@ app.include_router(chat_router, prefix=API_PREFIX)
 app.include_router(workflow_router, prefix=API_PREFIX)
 app.include_router(diagnosis_router, prefix=API_PREFIX)
 app.include_router(feedback_router, prefix=API_PREFIX)
+app.include_router(graph_router, prefix=API_PREFIX)
+app.include_router(system_router, prefix=API_PREFIX)
 
 
 @app.get("/")

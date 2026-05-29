@@ -17,6 +17,7 @@ const result = ref(null)
 const vision = computed(() => result.value?.vision_result || {})
 const diagnosis = computed(() => result.value?.diagnosis || {})
 const contexts = computed(() => result.value?.contexts || [])
+const evidenceItems = computed(() => result.value?.evidence_items || [])
 const generatedQuery = computed(() => diagnosis.value.generated_query || '')
 
 const beforeImageUpload = (file) => {
@@ -75,6 +76,12 @@ const riskType = (level) => {
   if (level === 'high') return 'danger'
   if (level === 'medium') return 'warning'
   return 'success'
+}
+
+const formatScore = (score) => {
+  const value = Number(score)
+  if (!Number.isFinite(value)) return '-'
+  return value.toFixed(2)
 }
 </script>
 
@@ -202,6 +209,61 @@ const riskType = (level) => {
           </div>
         </div>
 
+        <div class="diagnosis-evidence-panel">
+          <div class="evidence-panel-head">
+            <div>
+              <h3>诊断依据</h3>
+              <p>AI 诊断结果基于维修手册命中片段生成，建议结合原手册页码和图示复核。</p>
+            </div>
+            <el-tag type="primary">{{ evidenceItems.length }} 条依据</el-tag>
+          </div>
+
+          <el-empty
+            v-if="!evidenceItems.length"
+            description="暂无手册依据"
+            :image-size="90"
+          />
+
+          <el-collapse v-else class="diagnosis-evidence-collapse">
+            <el-collapse-item
+              v-for="(item, index) in evidenceItems"
+              :key="item.chunk_id || `${item.filename}-${item.page}-${index}`"
+              :name="`diagnosis-evidence-${index}`"
+            >
+              <template #title>
+                <div class="diagnosis-evidence-title">
+                  <span>{{ item.filename || '未知手册' }}</span>
+                  <el-tag type="primary" effect="dark">第 {{ item.page || '-' }} 页</el-tag>
+                </div>
+              </template>
+
+              <div class="diagnosis-evidence-item">
+                <p class="evidence-summary">{{ item.summary }}</p>
+                <div class="evidence-score-row">
+                  <el-tag type="success" effect="plain">
+                    final {{ formatScore(item.final_score) }}
+                  </el-tag>
+                  <el-tag type="warning" effect="plain">
+                    bm25 {{ formatScore(item.bm25_score) }}
+                  </el-tag>
+                  <el-tag type="info" effect="plain">
+                    hits {{ item.keyword_hits || 0 }}
+                  </el-tag>
+                </div>
+                <div class="evidence-chunk-id">chunk_id: {{ item.chunk_id || '-' }}</div>
+                <p class="evidence-raw-text">{{ item.content }}</p>
+                <el-alert
+                  v-if="!item.preview_available"
+                  title="暂未生成页面预览，可根据文件名和页码定位原始手册。"
+                  type="info"
+                  :closable="false"
+                  show-icon
+                />
+              </div>
+            </el-collapse-item>
+          </el-collapse>
+        </div>
+
         <div class="workflow-entry">
           <el-button @click="goFeedback">
             提交诊断修正
@@ -213,7 +275,7 @@ const riskType = (level) => {
             :disabled="!diagnosis.workflow_recommended"
             @click="goWorkflow"
           >
-            生成标准作业卡
+            基于该依据生成标准作业卡
           </el-button>
         </div>
       </el-card>
@@ -367,7 +429,91 @@ const riskType = (level) => {
 .workflow-entry {
   display: flex;
   justify-content: flex-end;
+  gap: 10px;
   margin-top: 16px;
+}
+
+.diagnosis-evidence-panel {
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid #bfdbfe;
+  border-radius: 10px;
+  background: #f8fafc;
+}
+
+.evidence-panel-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.evidence-panel-head h3 {
+  margin: 0 0 6px;
+  color: #111827;
+}
+
+.evidence-panel-head p {
+  margin: 0;
+  color: #64748b;
+  line-height: 1.7;
+}
+
+.diagnosis-evidence-collapse {
+  border-top: 1px solid #dbeafe;
+}
+
+.diagnosis-evidence-title {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-right: 8px;
+}
+
+.diagnosis-evidence-title span {
+  overflow: hidden;
+  color: #172033;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.diagnosis-evidence-item {
+  padding: 12px;
+  border: 1px solid #dbeafe;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.evidence-summary,
+.evidence-raw-text {
+  margin: 0 0 10px;
+  color: #334155;
+  line-height: 1.75;
+}
+
+.evidence-score-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.evidence-chunk-id {
+  margin-bottom: 8px;
+  color: #64748b;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+}
+
+.evidence-raw-text {
+  padding: 10px;
+  border-radius: 6px;
+  background: #eef2f7;
 }
 
 @media (max-width: 980px) {

@@ -2,6 +2,7 @@ from typing import Any
 
 from fastapi import APIRouter, Query
 
+from backend.services.evidence_service import build_retrieval_filter_result
 from backend.services.pdf_service import search_manual_chunks
 from backend.services.vector_service import hybrid_search, semantic_search
 
@@ -31,11 +32,15 @@ def semantic_search_manual(
 
 @router.get("/hybrid-search")
 def hybrid_search_manual(
-    q: str = Query(..., min_length=1),
+    q: str | None = Query(default=None, min_length=1),
+    query: str | None = Query(default=None, min_length=1),
     top_k: int = Query(5, ge=1, le=20),
+    device_model: str | None = Query(default=None),
 ) -> dict[str, Any]:
-    matches = hybrid_search(q, top_k=top_k)
+    keyword = q or query or ""
+    matches = hybrid_search(keyword, top_k=top_k, device_model=device_model)
     return {
-        "query": q,
+        "query": keyword,
+        "retrieval_filter": build_retrieval_filter_result(matches),
         "results": matches,
     }

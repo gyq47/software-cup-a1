@@ -5,6 +5,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from backend.services.case_indexing_service import index_feedback_case
+
 BASE_DATA_DIR = Path(__file__).resolve().parents[1] / "data"
 FEEDBACK_FILE = BASE_DATA_DIR / "feedback" / "feedback_items.json"
 CASE_FILE = BASE_DATA_DIR / "cases" / "case_items.json"
@@ -88,11 +90,15 @@ def review_feedback(payload: dict[str, Any]) -> dict[str, Any]:
         write_json_list(FEEDBACK_FILE, items)
 
         if action == "approve":
-            create_case_from_feedback(item)
+            case = create_case_from_feedback(item)
+            index_result = safely_index_feedback_case(case, item)
             return {
                 "success": True,
                 "status": "approved",
-                "message": "反馈已审核通过，并生成知识案例",
+                "case_id": case.get("case_id", ""),
+                "rag_indexed": bool(index_result.get("indexed", False)),
+                "index_message": str(index_result.get("message", "")),
+                "message": build_review_success_message(index_result),
             }
 
         return {
@@ -135,6 +141,23 @@ def create_case_from_feedback(feedback: dict[str, Any]) -> dict[str, Any]:
     cases.append(case)
     write_json_list(CASE_FILE, cases)
     return case
+
+
+def safely_index_feedback_case(case: dict[str, Any], feedback: dict[str, Any]) -> dict[str, Any]:
+    try:
+        return index_feedback_case(case, feedback)
+    except Exception as exc:
+        print(f"[Feedback RAG] case indexing failed. reason: {exc}")
+        return {
+            "indexed": False,
+            "message": "审核案例保存成功，但写入 RAG 知识库失败",
+        }
+
+
+def build_review_success_message(index_result: dict[str, Any]) -> str:
+    if index_result.get("indexed"):
+        return "反馈已审核通过，已生成知识案例并写入 RAG 知识库"
+    return "反馈已审核通过，已生成知识案例；RAG 索引写入失败，请稍后重新索引"
 
 
 def extract_keywords(text: str) -> list[str]:

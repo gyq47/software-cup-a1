@@ -14,12 +14,12 @@ DEMO_USERS = {
     "expert": {
         "password": "123456",
         "role": "expert",
-        "display_name": "专家",
+        "display_name": "设备工程师",
     },
     "admin": {
         "password": "123456",
         "role": "admin",
-        "display_name": "管理员",
+        "display_name": "系统管理员",
     },
 }
 
