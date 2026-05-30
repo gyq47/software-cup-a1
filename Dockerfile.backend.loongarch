@@ -1,4 +1,4 @@
-FROM python:3.11-slim
+FROM loongarch64/python:3.11
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -11,7 +11,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 
 COPY requirements-core.txt requirements-rag-optional.txt requirements-extra-optional.txt ./
-RUN python -m pip install --upgrade pip \
+RUN apt-get update \
+    && apt-get install -y build-essential python3-dev rustc cargo pkg-config \
+    && rm -rf /var/lib/apt/lists/* \
+    && python -m pip install --upgrade pip \
     && python -m pip install -r requirements-core.txt
 
 # LoongArch minimal mode intentionally skips risky native/RAG packages by default.
