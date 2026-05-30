@@ -81,6 +81,8 @@ def retrieve_documents_with_info(
 
     vector_store = get_vector_store()
     if vector_store is None:
+        filter_info["filter_fallback"] = True
+        filter_info["filter_message"] = "向量库不可用，已进入降级模式"
         return [], filter_info
 
     resolved_filters = dict(filters or {})

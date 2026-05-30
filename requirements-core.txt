@@ -1,0 +1,12 @@
+fastapi==0.136.1
+uvicorn==0.47.0
+pydantic==2.13.4
+python-dotenv
+python-multipart==0.0.21
+openai
+requests
+dashscope
+aiofiles
+pypdf==6.4.1
+jieba
+rank-bm25

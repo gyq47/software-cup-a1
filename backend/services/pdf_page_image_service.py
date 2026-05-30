@@ -2,7 +2,7 @@ import re
 from pathlib import Path
 from typing import Any
 
-from backend.core.config import MANUAL_PAGE_IMAGE_PATH
+from backend.core.config import DISABLE_PDF_PREVIEW, MANUAL_PAGE_IMAGE_PATH
 from backend.rag.metadata_service import extract_document_metadata
 
 PAGE_IMAGE_DPI_SCALE = 1.4
@@ -16,6 +16,9 @@ def ensure_pdf_page_images(
 ) -> dict[int, str]:
     path = Path(file_path)
     if path.suffix.lower() != ".pdf" or not path.exists():
+        return {}
+    if DISABLE_PDF_PREVIEW:
+        print("[Manual Page Image] PDF preview disabled, skip page images.")
         return {}
 
     try:

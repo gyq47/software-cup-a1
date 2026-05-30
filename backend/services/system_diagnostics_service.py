@@ -7,6 +7,8 @@ from pathlib import Path
 from typing import Any
 
 from backend.core.config import (
+    DISABLE_CHROMA,
+    DISABLE_PDF_PREVIEW,
     KNOWLEDGE_GRAPH_PATH,
     MANUAL_PAGE_IMAGE_PATH,
     MANUAL_STATIC_PATH,
@@ -86,6 +88,15 @@ def check_base_service() -> dict[str, Any]:
 
 
 def check_vector_store() -> dict[str, Any]:
+    if DISABLE_CHROMA:
+        return _module(
+            "Chroma 向量库",
+            "warning",
+            "Chroma 已禁用，系统处于最小部署模式",
+            metrics={"vector_store_dir": str(VECTOR_STORE_PATH), "disabled": True, "total_chunks": 0},
+            warnings=["DISABLE_CHROMA=true，RAG 向量检索不可用"],
+        )
+
     sqlite_path = VECTOR_STORE_PATH / "chroma.sqlite3"
     if not sqlite_path.exists():
         return _module(
@@ -169,6 +180,21 @@ def check_page_images() -> dict[str, Any]:
     page_image_count = len(list(MANUAL_PAGE_IMAGE_PATH.rglob("*.png"))) if MANUAL_PAGE_IMAGE_PATH.exists() else 0
     dir_size = _directory_size(MANUAL_PAGE_IMAGE_PATH) if MANUAL_PAGE_IMAGE_PATH.exists() else 0
     warnings = []
+    if DISABLE_PDF_PREVIEW:
+        return _module(
+            "PDF 页截图",
+            "warning",
+            f"PDF 页面预览生成已禁用，现有截图 {page_image_count} 张",
+            metrics={
+                "manual_pages_dir": str(MANUAL_PAGE_IMAGE_PATH),
+                "page_image_count": page_image_count,
+                "directory_size_mb": round(dir_size / 1024 / 1024, 2),
+                "pymupdf_available": False,
+                "disabled": True,
+            },
+            warnings=["DISABLE_PDF_PREVIEW=true，新的 PDF 页截图不会生成"],
+        )
+
     try:
         import fitz  # noqa: F401
 

@@ -7,6 +7,7 @@ from typing import Any
 from openai import OpenAI
 
 from backend.core.config import (
+    DISABLE_IMAGE_KNOWLEDGE,
     IMAGE_KNOWLEDGE_MAX_PAGES,
     IMAGE_KNOWLEDGE_PATH,
     IMAGE_KNOWLEDGE_QWEN_TIMEOUT,
@@ -40,6 +41,19 @@ def extract_page_image_knowledge(
     pdf_filename: str,
     page_number: int,
 ) -> dict[str, Any]:
+    if DISABLE_IMAGE_KNOWLEDGE:
+        return {
+            "ocr_text": "",
+            "image_summary": "",
+            "keywords": [],
+            "objects": [],
+            "document_content": "",
+            "device_model": device_model,
+            "manual_type": manual_type,
+            "pdf_filename": pdf_filename,
+            "page_number": page_number,
+        }
+
     path = Path(image_path)
     cached = load_cached_knowledge(path)
     if cached is not None:
@@ -82,6 +96,10 @@ def build_page_image_documents(
     page_images: dict[int, str],
     max_pages: int | None = None,
 ) -> list[Any]:
+    if DISABLE_IMAGE_KNOWLEDGE:
+        print("[PDF Image Knowledge] disabled, skip manual image knowledge.")
+        return []
+
     if not page_images:
         return []
 
@@ -137,6 +155,9 @@ def run_optional_ocr(image_path: Path) -> str:
 
 
 def analyze_manual_page_image(image_path: Path) -> dict[str, Any]:
+    if DISABLE_IMAGE_KNOWLEDGE:
+        return {"summary": "", "keywords": [], "objects": []}
+
     if not QWEN_API_KEY:
         return {"summary": "", "keywords": [], "objects": []}
 

@@ -33,6 +33,19 @@ IMAGE_KNOWLEDGE_QWEN_TIMEOUT = int(os.getenv("IMAGE_KNOWLEDGE_QWEN_TIMEOUT", "12
 IMAGE_KNOWLEDGE_VL_MODE = os.getenv("IMAGE_KNOWLEDGE_VL_MODE", "fast").lower()
 
 
+def env_bool(name: str, default: bool = False) -> bool:
+    value = os.getenv(name)
+    if value is None:
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "on"}
+
+
+DISABLE_CHROMA = env_bool("DISABLE_CHROMA", False)
+DISABLE_PDF_PREVIEW = env_bool("DISABLE_PDF_PREVIEW", False)
+DISABLE_IMAGE_KNOWLEDGE = env_bool("DISABLE_IMAGE_KNOWLEDGE", False)
+DISABLE_LOCAL_EMBEDDING = env_bool("DISABLE_LOCAL_EMBEDDING", False)
+
+
 def resolve_project_path(path: str) -> Path:
     return Path(path).expanduser().resolve()
 

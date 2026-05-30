@@ -1,0 +1,29 @@
+FROM python:3.11-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    DISABLE_CHROMA=true \
+    DISABLE_PDF_PREVIEW=true \
+    DISABLE_IMAGE_KNOWLEDGE=true \
+    DISABLE_LOCAL_EMBEDDING=true
+
+WORKDIR /app
+
+COPY requirements-core.txt requirements-rag-optional.txt requirements-extra-optional.txt ./
+RUN python -m pip install --upgrade pip \
+    && python -m pip install -r requirements-core.txt
+
+# LoongArch minimal mode intentionally skips risky native/RAG packages by default.
+# To re-enable local RAG in a compatible image, install the optional layers:
+# RUN python -m pip install -r requirements-rag-optional.txt
+# RUN python -m pip install -r requirements-extra-optional.txt
+
+COPY backend ./backend
+COPY scripts/start_backend_loongarch.sh ./scripts/start_backend_loongarch.sh
+
+RUN chmod +x ./scripts/start_backend_loongarch.sh
+
+EXPOSE 8000
+
+CMD ["./scripts/start_backend_loongarch.sh"]

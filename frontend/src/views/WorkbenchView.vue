@@ -3,6 +3,7 @@ import { Camera, DocumentChecked, UploadFilled, WarningFilled } from '@element-p
 import { ElMessage } from 'element-plus'
 import { computed, reactive, ref } from 'vue'
 
+import { buildApiUrl } from '../api/config'
 import { confirmDiagnosis } from '../api/diagnosis'
 import { getGraphSubgraph } from '../api/graph'
 import {
@@ -224,10 +225,10 @@ const getPagePreviewUrl = (item) => {
     return previewUrlValue
   }
   if (previewUrlValue.startsWith('/')) {
-    return `http://localhost:8000${previewUrlValue}`
+    return buildApiUrl(previewUrlValue)
   }
   if (item?.page_image_path) {
-    return `http://localhost:8000/api/manual/page-image?path=${encodeURIComponent(item.page_image_path)}`
+    return buildApiUrl(`/api/manual/page-image?path=${encodeURIComponent(item.page_image_path)}`)
   }
   return ''
 }

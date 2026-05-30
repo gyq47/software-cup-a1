@@ -1,9 +1,13 @@
 from typing import Any
 
-from backend.core.config import EMBEDDING_MODEL_NAME
+from backend.core.config import DISABLE_LOCAL_EMBEDDING, EMBEDDING_MODEL_NAME
 
 
 def create_embeddings() -> Any | None:
+    if DISABLE_LOCAL_EMBEDDING:
+        print("[LangChain RAG] local embedding disabled, fallback to legacy search.")
+        return None
+
     try:
         from langchain_community.embeddings import HuggingFaceEmbeddings
 

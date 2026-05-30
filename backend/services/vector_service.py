@@ -29,7 +29,7 @@ try:
 except Exception:
     SentenceTransformer = None
 
-from backend.core.config import RAG_BACKEND
+from backend.core.config import DISABLE_LOCAL_EMBEDDING, RAG_BACKEND
 from backend.rag.metadata_service import normalize_device_model
 from backend.services.pdf_service import MANUAL_DIRS, load_manual_chunks
 
@@ -85,6 +85,8 @@ _manuals_signature: tuple[tuple[str, float, int], ...] = ()
 
 def get_model() -> Any:
     global _model
+    if DISABLE_LOCAL_EMBEDDING:
+        raise RuntimeError("本地 embedding 已禁用")
     if SentenceTransformer is None:
         raise RuntimeError("sentence-transformers 不可用")
     if _model is None:
@@ -93,6 +95,8 @@ def get_model() -> Any:
 
 
 def generate_embeddings(chunks: list[dict[str, Any]]) -> Any:
+    if DISABLE_LOCAL_EMBEDDING:
+        return []
     if np is None:
         return []
 
@@ -109,7 +113,7 @@ def generate_embeddings(chunks: list[dict[str, Any]]) -> Any:
 
 
 def build_faiss_index(chunks: list[dict[str, Any]]) -> faiss.IndexFlatL2:
-    if faiss is None or np is None or SentenceTransformer is None:
+    if DISABLE_LOCAL_EMBEDDING or faiss is None or np is None or SentenceTransformer is None:
         return None
 
     embeddings = generate_embeddings(chunks)
@@ -143,6 +147,8 @@ def tokenize_text(text: str) -> list[str]:
 def semantic_search(query: str, top_k: int = 5) -> list[dict[str, Any]]:
     keyword = query.strip()
     if not keyword:
+        return []
+    if DISABLE_LOCAL_EMBEDDING:
         return []
 
     chunks, index = get_cached_index()

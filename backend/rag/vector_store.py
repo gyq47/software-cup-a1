@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Any
 
-from backend.core.config import VECTOR_STORE_DIR, VECTOR_STORE_PATH
+from backend.core.config import DISABLE_CHROMA, VECTOR_STORE_DIR, VECTOR_STORE_PATH
 from backend.rag.embeddings import create_embeddings
 
 _vector_store: Any | None = None
@@ -9,6 +9,10 @@ _vector_store: Any | None = None
 
 def get_vector_store() -> Any | None:
     global _vector_store
+    if DISABLE_CHROMA:
+        print("[LangChain RAG] Chroma disabled, fallback to legacy search.")
+        return None
+
     if _vector_store is not None:
         return _vector_store
 

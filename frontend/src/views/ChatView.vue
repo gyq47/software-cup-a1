@@ -4,6 +4,7 @@ import MarkdownIt from 'markdown-it'
 import { nextTick, ref } from 'vue'
 
 import { sendChat } from '../api/chat'
+import { buildApiUrl } from '../api/config'
 
 const markdown = new MarkdownIt({
   breaks: true,
@@ -125,10 +126,10 @@ const getPagePreviewUrl = (context) => {
     return previewUrlValue
   }
   if (previewUrlValue.startsWith('/')) {
-    return `http://localhost:8000${previewUrlValue}`
+    return buildApiUrl(previewUrlValue)
   }
   if (context?.page_image_path) {
-    return `http://localhost:8000/api/manual/page-image?path=${encodeURIComponent(context.page_image_path)}`
+    return buildApiUrl(`/api/manual/page-image?path=${encodeURIComponent(context.page_image_path)}`)
   }
   return ''
 }
