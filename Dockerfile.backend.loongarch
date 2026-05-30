@@ -20,10 +20,9 @@ RUN apt-get update \
       -o Acquire::AllowInsecureRepositories=true \
       -o Acquire::AllowDowngradeToInsecureRepositories=true \
     && apt-get install -y --allow-unauthenticated \
-      build-essential python3-dev rustc cargo pkg-config \
+      build-essential python3-dev rustc cargo pkg-config maturin \
     && rm -rf /var/lib/apt/lists/* \
     && python -m pip install --upgrade pip setuptools wheel \
-    && python -m pip install maturin \
     && python -m pip install --no-build-isolation pydantic-core==2.46.4 \
     && python -m pip install -r requirements-core.txt
 
