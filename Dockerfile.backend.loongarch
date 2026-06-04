@@ -5,9 +5,6 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=1 \
     PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple \
     PIP_DEFAULT_TIMEOUT=120 \
-    CARGO_NET_GIT_FETCH_WITH_CLI=true \
-    CARGO_HTTP_MULTIPLEXING=false \
-    CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse \
     DISABLE_CHROMA=true \
     DISABLE_PDF_PREVIEW=true \
     DISABLE_IMAGE_KNOWLEDGE=true \
@@ -20,10 +17,9 @@ RUN apt-get update \
       -o Acquire::AllowInsecureRepositories=true \
       -o Acquire::AllowDowngradeToInsecureRepositories=true \
     && apt-get install -y --allow-unauthenticated \
-      build-essential python3-dev rustc cargo pkg-config maturin \
+      build-essential python3-dev pkg-config \
     && rm -rf /var/lib/apt/lists/* \
     && python -m pip install --upgrade pip setuptools wheel \
-    && python -m pip install --no-build-isolation pydantic-core==2.46.4 \
     && python -m pip install -r requirements-core.txt
 
 # LoongArch minimal mode intentionally skips risky native/RAG packages by default.

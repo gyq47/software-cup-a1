@@ -18,6 +18,12 @@ from backend.services.triple_extraction_service import commit_triples_to_graph, 
 router = APIRouter(prefix="/graph", tags=["graph"])
 
 
+def dump_model(model: BaseModel, **kwargs: Any) -> dict[str, Any]:
+    if hasattr(model, "model_dump"):
+        return model.model_dump(**kwargs)
+    return model.dict(**kwargs)
+
+
 class GraphNodeRequest(BaseModel):
     id: str | None = None
     name: str
@@ -101,13 +107,13 @@ def graph_subgraph(
 
 @router.post("/node")
 def graph_add_node(request: GraphNodeRequest) -> dict[str, Any]:
-    node = handle_graph_call(add_node, request.model_dump(exclude_none=True))
+    node = handle_graph_call(add_node, dump_model(request, exclude_none=True))
     return {"success": True, "node": node}
 
 
 @router.post("/edge")
 def graph_add_edge(request: GraphEdgeRequest) -> dict[str, Any]:
-    edge = handle_graph_call(add_edge, request.model_dump(exclude_none=True))
+    edge = handle_graph_call(add_edge, dump_model(request, exclude_none=True))
     return {"success": True, "edge": edge}
 
 

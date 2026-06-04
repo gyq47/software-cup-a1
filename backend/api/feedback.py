@@ -14,6 +14,12 @@ from backend.services.tool_orchestrator_service import run_feedback_pipeline_tra
 router = APIRouter(prefix="/feedback", tags=["feedback"])
 
 
+def dump_model(model: BaseModel) -> dict[str, Any]:
+    if hasattr(model, "model_dump"):
+        return model.model_dump()
+    return model.dict()
+
+
 class FeedbackSubmitRequest(BaseModel):
     source_type: str = Field(...)
     source_id: str = ""
@@ -37,7 +43,7 @@ class FeedbackReviewRequest(BaseModel):
 @router.post("/submit")
 def submit(request: FeedbackSubmitRequest) -> dict[str, Any]:
     try:
-        return submit_feedback(request.model_dump())
+        return submit_feedback(dump_model(request))
     except Exception as exc:
         raise HTTPException(status_code=500, detail="反馈提交失败") from exc
 
@@ -50,7 +56,7 @@ def pending() -> dict[str, list[dict[str, Any]]]:
 @router.post("/review")
 def review(request: FeedbackReviewRequest) -> dict[str, Any]:
     try:
-        result = review_feedback(request.model_dump())
+        result = review_feedback(dump_model(request))
         if result.get("status") == "approved":
             result["tool_trace"] = run_feedback_pipeline_trace(result)
         return result
