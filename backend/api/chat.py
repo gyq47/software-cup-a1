@@ -1,5 +1,5 @@
 import json
-from typing import Any
+from typing import Any, Optional
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
@@ -18,13 +18,13 @@ router = APIRouter(prefix="/chat", tags=["chat"])
 class ChatRequest(BaseModel):
     question: str = Field(..., min_length=1)
     top_k: int = Field(default=5, ge=1, le=20)
-    device_model: str | None = None
+    device_model: Optional[str] = None
 
 
 class ChatResponse(BaseModel):
     question: str
     answer: str
-    structured_answer: dict[str, Any] | None = None
+    structured_answer: Optional[dict[str, Any]] = None
     contexts: list[dict[str, Any]]
     evidence_items: list[dict[str, Any]]
     grounding_result: dict[str, Any]
@@ -82,7 +82,7 @@ def chat(request: ChatRequest) -> ChatResponse:
     )
 
 
-def parse_structured_answer(answer: str) -> dict[str, Any] | None:
+def parse_structured_answer(answer: str) -> Optional[dict[str, Any]]:
     try:
         parsed = json.loads(answer)
     except json.JSONDecodeError:

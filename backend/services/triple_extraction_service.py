@@ -1,7 +1,7 @@
 import hashlib
 import json
 import re
-from typing import Any
+from typing import Any, Optional
 
 from openai import OpenAI, OpenAIError
 
@@ -61,9 +61,9 @@ MAX_TRIPLES = 30
 
 def extract_triples_from_text(
     text: str,
-    device_model: str | None = None,
-    source: str | None = None,
-    source_type: str | None = None,
+    device_model: Optional[str] = None,
+    source: Optional[str] = None,
+    source_type: Optional[str] = None,
 ) -> dict[str, Any]:
     content = text.strip()
     if not content:
@@ -95,9 +95,9 @@ def extract_triples_from_text(
 def commit_triples_to_graph(
     entities: list[dict[str, Any]],
     triples: list[dict[str, Any]],
-    device_model: str | None = None,
-    source: str | None = None,
-    source_type: str | None = None,
+    device_model: Optional[str] = None,
+    source: Optional[str] = None,
+    source_type: Optional[str] = None,
 ) -> dict[str, Any]:
     graph = load_graph()
     initial_node_count = len(graph["nodes"])
@@ -205,9 +205,9 @@ def commit_triples_to_graph(
 
 def call_llm_for_triples(
     text: str,
-    device_model: str | None,
-    source: str | None,
-    source_type: str | None,
+    device_model: Optional[str],
+    source: Optional[str],
+    source_type: Optional[str],
 ) -> str:
     client = OpenAI(api_key=QWEN_API_KEY, base_url=QWEN_BASE_URL)
     messages = [
@@ -249,9 +249,9 @@ def build_triple_system_prompt() -> str:
 
 def build_triple_user_prompt(
     text: str,
-    device_model: str | None,
-    source: str | None,
-    source_type: str | None,
+    device_model: Optional[str],
+    source: Optional[str],
+    source_type: Optional[str],
 ) -> str:
     return (
         f"设备型号：{device_model or 'common'}\n"
@@ -282,7 +282,7 @@ def parse_json_payload(raw_answer: str) -> dict[str, Any]:
     return payload
 
 
-def normalize_entities(value: Any, device_model: str | None, warnings: list[str]) -> list[dict[str, Any]]:
+def normalize_entities(value: Any, device_model: Optional[str], warnings: list[str]) -> list[dict[str, Any]]:
     if not isinstance(value, list):
         warnings.append("entities 字段缺失或不是数组")
         return []
@@ -319,7 +319,7 @@ def normalize_entities(value: Any, device_model: str | None, warnings: list[str]
 def normalize_triples(
     value: Any,
     warnings: list[str],
-    entity_types: dict[str, str] | None = None,
+    entity_types: Optional[dict[str, str]] = None,
 ) -> list[dict[str, Any]]:
     if not isinstance(value, list):
         warnings.append("triples 字段缺失或不是数组")
@@ -399,8 +399,8 @@ def find_or_create_node_for_name(
     name: str,
     device_model: str,
     entity_lookup: dict[tuple[str, str, str], str],
-    source: str | None,
-    source_type: str | None,
+    source: Optional[str],
+    source_type: Optional[str],
 ) -> str:
     for (current_name, _current_type, current_device), node in nodes_by_key.items():
         if current_name == name and current_device in {device_model, "common"}:
@@ -433,8 +433,8 @@ def merge_edge_metadata(
     graph: dict[str, Any],
     edge_id: str,
     triple: dict[str, Any],
-    source: str | None,
-    source_type: str | None,
+    source: Optional[str],
+    source_type: Optional[str],
 ) -> None:
     for edge in graph["edges"]:
         if edge.get("id") != edge_id:

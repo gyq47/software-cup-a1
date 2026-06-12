@@ -1,6 +1,6 @@
 import json
 import re
-from typing import Any
+from typing import Any, Optional
 
 from openai import OpenAI, OpenAIError
 
@@ -27,11 +27,11 @@ DEFAULT_DIAGNOSIS = {
 def diagnose_fault_image(
     image_bytes: bytes,
     content_type: str,
-    text: str | None = None,
-    device_model: str | None = None,
-    mode: str | None = None,
-    level: str | None = None,
-    alarm_code: str | None = None,
+    text: Optional[str] = None,
+    device_model: Optional[str] = None,
+    mode: Optional[str] = None,
+    level: Optional[str] = None,
+    alarm_code: Optional[str] = None,
 ) -> dict[str, Any]:
     enriched_text = " ".join([item for item in [alarm_code, text, level, mode] if item])
     vision_result = analyze_fault_image(
@@ -80,14 +80,14 @@ def diagnose_fault_image(
 
 
 def confirm_alarm_diagnosis(
-    device_model: str | None = None,
-    mode: str | None = None,
-    level: str | None = None,
-    selected_alarm_codes: list[str] | None = None,
-    selected_alarm_texts: list[str] | None = None,
-    user_confirm_note: str | None = None,
-    fault_description: str | None = None,
-    vision_result: dict[str, Any] | None = None,
+    device_model: Optional[str] = None,
+    mode: Optional[str] = None,
+    level: Optional[str] = None,
+    selected_alarm_codes: Optional[list[str]] = None,
+    selected_alarm_texts: Optional[list[str]] = None,
+    user_confirm_note: Optional[str] = None,
+    fault_description: Optional[str] = None,
+    vision_result: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
     current_vision_result = vision_result or {}
     confirmed_vision_result = build_confirmed_vision_result(
@@ -114,13 +114,13 @@ def confirm_alarm_diagnosis(
 
 
 def build_confirmed_alarm_query(
-    device_model: str | None,
-    mode: str | None,
-    level: str | None,
+    device_model: Optional[str],
+    mode: Optional[str],
+    level: Optional[str],
     selected_alarm_codes: list[str],
     selected_alarm_texts: list[str],
-    user_confirm_note: str | None,
-    fault_description: str | None,
+    user_confirm_note: Optional[str],
+    fault_description: Optional[str],
     vision_result: dict[str, Any],
 ) -> str:
     parts: list[str] = []
@@ -148,7 +148,7 @@ def build_confirmed_vision_result(
     vision_result: dict[str, Any],
     selected_alarm_codes: list[str],
     selected_alarm_texts: list[str],
-    user_confirm_note: str | None,
+    user_confirm_note: Optional[str],
 ) -> dict[str, Any]:
     confirmed = dict(vision_result)
     confirmed["confirmed_alarm_codes"] = selected_alarm_codes
@@ -185,7 +185,7 @@ def remove_unselected_alarm_codes(
 def run_diagnosis_from_query(
     query: str,
     vision_result: dict[str, Any],
-    device_model: str | None = None,
+    device_model: Optional[str] = None,
 ) -> dict[str, Any]:
     contexts = hybrid_search(query, top_k=5, device_model=device_model) if query else []
     graph_context = build_lazy_graph_context(query, contexts, device_model=device_model)
@@ -226,8 +226,8 @@ def run_diagnosis_from_query(
 
 
 def build_multimodal_query(
-    text: str | None,
-    device_model: str | None,
+    text: Optional[str],
+    device_model: Optional[str],
     vision_result: dict[str, Any],
 ) -> str:
     parts: list[str] = []
@@ -253,7 +253,7 @@ def generate_diagnosis_report(
     generated_query: str,
     vision_result: dict[str, Any],
     contexts: list[dict[str, Any]],
-    graph_context: dict[str, Any] | None = None,
+    graph_context: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
     if not QWEN_API_KEY:
         raise RuntimeError("QWEN_API_KEY 未配置")
@@ -304,7 +304,7 @@ def build_diagnosis_user_prompt(
     generated_query: str,
     vision_result: dict[str, Any],
     contexts: list[dict[str, Any]],
-    graph_context: dict[str, Any] | None = None,
+    graph_context: Optional[dict[str, Any]] = None,
 ) -> str:
     scope_text = ""
     if vision_result.get("confirmed_alarm_codes"):
@@ -349,7 +349,7 @@ def format_contexts(contexts: list[dict[str, Any]]) -> str:
     return "\n\n".join(formatted)
 
 
-def format_graph_context(graph_context: dict[str, Any] | None) -> str:
+def format_graph_context(graph_context: Optional[dict[str, Any]]) -> str:
     if not graph_context or not graph_context.get("enabled"):
         return "未匹配到可用关联图谱节点。"
     return str(graph_context.get("graph_context_text") or "未匹配到可用关联图谱节点。")

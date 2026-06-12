@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Optional
 
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from pydantic import BaseModel
@@ -9,24 +9,24 @@ router = APIRouter(prefix="/diagnosis", tags=["diagnosis"])
 
 
 class DiagnosisConfirmRequest(BaseModel):
-    device_model: str | None = None
-    mode: str | None = None
-    level: str | None = None
+    device_model: Optional[str] = None
+    mode: Optional[str] = None
+    level: Optional[str] = None
     selected_alarm_codes: list[str] = []
     selected_alarm_texts: list[str] = []
-    user_confirm_note: str | None = None
-    fault_description: str | None = None
+    user_confirm_note: Optional[str] = None
+    fault_description: Optional[str] = None
     vision_result: dict[str, Any] = {}
 
 
 @router.post("/image")
 async def diagnose_image(
     image: UploadFile = File(...),
-    text: str | None = Form(default=None),
-    device_model: str | None = Form(default=None),
-    mode: str | None = Form(default=None),
-    level: str | None = Form(default=None),
-    alarm_code: str | None = Form(default=None),
+    text: Optional[str] = Form(default=None),
+    device_model: Optional[str] = Form(default=None),
+    mode: Optional[str] = Form(default=None),
+    level: Optional[str] = Form(default=None),
+    alarm_code: Optional[str] = Form(default=None),
 ) -> dict[str, Any]:
     if not image.content_type or not image.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="只允许上传图片文件")

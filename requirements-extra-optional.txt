@@ -1,4 +1,6 @@
-pymupdf
-faiss-cpu
 pytesseract
 Pillow
+
+# PyMuPDF has LoongArch wheel availability risk. Install only if a verified
+# cp39 LoongArch wheel is available in wheels/.
+pymupdf

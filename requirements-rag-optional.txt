@@ -1,8 +1,4 @@
-chromadb
-langchain
-langchain-community
-langchain-core
-langchain-openai
-sentence-transformers
-torch
-numpy
+langchain==0.1.20
+langchain-community==0.0.38
+langchain-core==0.1.53
+langchain-openai==0.1.7

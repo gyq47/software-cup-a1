@@ -1,9 +1,9 @@
-from typing import Any
+from typing import Any, Optional
 
 from backend.core.config import DISABLE_LOCAL_EMBEDDING, EMBEDDING_MODEL_NAME
 
 
-def create_embeddings() -> Any | None:
+def create_embeddings() -> Optional[Any]:
     if DISABLE_LOCAL_EMBEDDING:
         print("[LangChain RAG] local embedding disabled, fallback to legacy search.")
         return None

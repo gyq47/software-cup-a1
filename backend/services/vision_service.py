@@ -1,7 +1,7 @@
 import base64
 import json
 import re
-from typing import Any
+from typing import Any, Optional
 
 from openai import OpenAI, OpenAIError
 
@@ -22,8 +22,8 @@ DEFAULT_VISION_RESULT = {
 def analyze_fault_image(
     image_bytes: bytes,
     content_type: str,
-    text: str | None = None,
-    device_model: str | None = None,
+    text: Optional[str] = None,
+    device_model: Optional[str] = None,
 ) -> dict[str, Any]:
     if not QWEN_API_KEY:
         raise RuntimeError("QWEN_API_KEY 未配置")
@@ -86,7 +86,7 @@ def build_vision_system_prompt() -> str:
     )
 
 
-def build_vision_user_prompt(text: str | None, device_model: str | None) -> str:
+def build_vision_user_prompt(text: Optional[str], device_model: Optional[str]) -> str:
     return (
         f"用户补充描述：{text or '无'}\n"
         f"用户填写设备型号：{device_model or '无'}\n"

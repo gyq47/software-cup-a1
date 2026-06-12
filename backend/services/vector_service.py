@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 try:
     import faiss
@@ -75,9 +75,9 @@ for term in INDUSTRIAL_ACTION_TERMS | INDUSTRIAL_PART_TERMS:
     if jieba is not None:
         jieba.add_word(term)
 
-_model: Any | None = None
-_index: Any | None = None
-_bm25_index: Any | None = None
+_model: Optional[Any] = None
+_index: Optional[Any] = None
+_bm25_index: Optional[Any] = None
 _chunks_cache: list[dict[str, Any]] = []
 _tokenized_corpus_cache: list[list[str]] = []
 _manuals_signature: tuple[tuple[str, float, int], ...] = ()
@@ -125,7 +125,7 @@ def build_faiss_index(chunks: list[dict[str, Any]]) -> faiss.IndexFlatL2:
     return index
 
 
-def build_bm25_index(chunks: list[dict[str, Any]]) -> BM25Okapi | None:
+def build_bm25_index(chunks: list[dict[str, Any]]) -> Optional[Any]:
     if BM25Okapi is None:
         return None
 
@@ -250,7 +250,7 @@ def bm25_search(query: str, top_k: int = 20) -> list[dict[str, Any]]:
     return results
 
 
-def hybrid_search(query: str, top_k: int = 5, device_model: str | None = None) -> list[dict[str, Any]]:
+def hybrid_search(query: str, top_k: int = 5, device_model: Optional[str] = None) -> list[dict[str, Any]]:
     normalized_device_model = normalize_device_model(device_model)
     if RAG_BACKEND.lower() == "langchain":
         try:
@@ -267,7 +267,7 @@ def hybrid_search(query: str, top_k: int = 5, device_model: str | None = None) -
     return legacy_hybrid_search(query, top_k=top_k, device_model=normalized_device_model)
 
 
-def legacy_hybrid_search(query: str, top_k: int = 5, device_model: str | None = None) -> list[dict[str, Any]]:
+def legacy_hybrid_search(query: str, top_k: int = 5, device_model: Optional[str] = None) -> list[dict[str, Any]]:
     keyword = query.strip()
     if not keyword:
         return []
@@ -393,7 +393,7 @@ def get_cached_index() -> tuple[list[dict[str, Any]], Any]:
     return chunks, index
 
 
-def get_cached_indexes() -> tuple[list[dict[str, Any]], Any, Any | None]:
+def get_cached_indexes() -> tuple[list[dict[str, Any]], Any, Optional[Any]]:
     global _chunks_cache, _index, _manuals_signature
     global _bm25_index, _tokenized_corpus_cache
 

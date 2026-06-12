@@ -1,7 +1,7 @@
 import re
 import shutil
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional, Union
 
 from fastapi import APIRouter, File, Form, HTTPException, Query, UploadFile
 from fastapi.responses import FileResponse
@@ -40,7 +40,7 @@ def sanitize_filename(filename: str) -> str:
     return safe_name or "manual.pdf"
 
 
-def normalize_device_model_dir(device_model: str | None) -> str:
+def normalize_device_model_dir(device_model: Optional[str]) -> str:
     value = (device_model or "common").strip()
     upper = value.upper()
     if "808D" in upper:
@@ -52,7 +52,7 @@ def normalize_device_model_dir(device_model: str | None) -> str:
     return "common"
 
 
-def normalize_manual_type_dir(manual_type: str | None) -> str:
+def normalize_manual_type_dir(manual_type: Optional[str]) -> str:
     value = (manual_type or "other").strip().lower()
     allowed = {"diagnosis", "parameter", "plc", "electrical", "drive", "operation", "repair", "other"}
     return value if value in allowed else "other"
@@ -77,7 +77,7 @@ def upload_manual(
     file: UploadFile = File(...),
     device_model: str = Form(default="common"),
     manual_type: str = Form(default="other"),
-) -> dict[str, bool | int | str]:
+) -> dict[str, Union[bool, int, str]]:
     filename = file.filename or ""
     if Path(filename).suffix.lower() != ".pdf":
         return {
@@ -114,8 +114,8 @@ def upload_manual(
 
 @router.get("/list")
 def list_manuals(
-    device_model: str | None = Query(default=None),
-    manual_type: str | None = Query(default=None),
+    device_model: Optional[str] = Query(default=None),
+    manual_type: Optional[str] = Query(default=None),
 ) -> dict[str, Any]:
     manuals = [
         item
@@ -201,8 +201,8 @@ def build_manual_item(path: Path) -> dict[str, Any]:
 
 def matches_manual_filters(
     item: dict[str, Any],
-    device_model: str | None,
-    manual_type: str | None,
+    device_model: Optional[str],
+    manual_type: Optional[str],
 ) -> bool:
     if device_model:
         requested = normalize_device_model_dir(device_model).upper()

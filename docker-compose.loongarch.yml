@@ -2,13 +2,13 @@ services:
   backend:
     build:
       context: .
-      dockerfile: Dockerfile.backend.loongarch
-    image: software-cup-a1-backend:loongarch
+      dockerfile: Dockerfile.backend.loongarch.py39
+    image: software-cup-a1-backend:loongarch-py39
     container_name: software-cup-a1-backend
     ports:
       - "8000:8000"
     environment:
-      DISABLE_CHROMA: "true"
+      DISABLE_CHROMA: "false"
       DISABLE_PDF_PREVIEW: "true"
       DISABLE_IMAGE_KNOWLEDGE: "true"
       DISABLE_LOCAL_EMBEDDING: "true"

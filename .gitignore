@@ -3,9 +3,23 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Archives and local transfer packages
+*.tar.gz
+*.tgz
+*.zip
+*.7z
+*.rar
+
 # Python virtual environments
 venv/
 .venv/
+.venv-py39/
+
+# Do not commit compiled LoongArch wheels or source archives.
+# Docker build still needs wheels in the build context, so do not mirror this
+# rule in .dockerignore.
+wheels/*
+!wheels/README.md
 
 # Environment files
 .env

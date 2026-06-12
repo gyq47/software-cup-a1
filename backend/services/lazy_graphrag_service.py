@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Optional
 
 from backend.services.graph_service import expand_neighbors, list_nodes, matches_device
 
@@ -8,7 +8,7 @@ MAX_GRAPH_CONTEXT_LINES = 12
 def identify_seed_nodes(
     user_query: str,
     retrieved_contexts: list[dict[str, Any]],
-    device_model: str | None = None,
+    device_model: Optional[str] = None,
     max_seeds: int = 5,
 ) -> list[dict[str, Any]]:
     text = build_match_text(user_query, retrieved_contexts)
@@ -60,7 +60,7 @@ def identify_seed_nodes(
 def build_lazy_graph_context(
     user_query: str,
     retrieved_contexts: list[dict[str, Any]],
-    device_model: str | None = None,
+    device_model: Optional[str] = None,
     depth: int = 2,
     max_seeds: int = 5,
 ) -> dict[str, Any]:

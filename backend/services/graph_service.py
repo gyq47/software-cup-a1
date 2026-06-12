@@ -2,7 +2,7 @@ import json
 import uuid
 from collections import Counter, deque
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 from backend.core.config import KNOWLEDGE_GRAPH_PATH
 
@@ -35,12 +35,12 @@ def save_graph(graph: dict[str, Any]) -> dict[str, Any]:
     return graph
 
 
-def list_nodes(device_model: str | None = None) -> list[dict[str, Any]]:
+def list_nodes(device_model: Optional[str] = None) -> list[dict[str, Any]]:
     graph = load_graph()
     return [node for node in graph["nodes"] if matches_device(node, device_model)]
 
 
-def list_edges(device_model: str | None = None) -> list[dict[str, Any]]:
+def list_edges(device_model: Optional[str] = None) -> list[dict[str, Any]]:
     graph = load_graph()
     nodes = {node["id"] for node in graph["nodes"] if matches_device(node, device_model)}
     return [
@@ -73,7 +73,7 @@ def add_edge(edge: dict[str, Any]) -> dict[str, Any]:
     return new_edge
 
 
-def search_nodes(keyword: str, device_model: str | None = None) -> list[dict[str, Any]]:
+def search_nodes(keyword: str, device_model: Optional[str] = None) -> list[dict[str, Any]]:
     normalized_keyword = normalize_text(keyword)
     nodes = list_nodes(device_model)
     if not normalized_keyword:
@@ -91,8 +91,8 @@ def search_nodes(keyword: str, device_model: str | None = None) -> list[dict[str
 def expand_neighbors(
     seed_node_ids: list[str],
     depth: int = 2,
-    relation_types: list[str] | None = None,
-    device_model: str | None = None,
+    relation_types: Optional[list[str]] = None,
+    device_model: Optional[str] = None,
 ) -> dict[str, Any]:
     graph = load_graph()
     allowed_nodes = {node["id"]: node for node in graph["nodes"] if matches_device(node, device_model)}
@@ -136,7 +136,7 @@ def find_paths(
     source: str,
     target: str,
     max_depth: int = 3,
-    device_model: str | None = None,
+    device_model: Optional[str] = None,
 ) -> dict[str, Any]:
     graph = load_graph()
     allowed_nodes = {node["id"]: node for node in graph["nodes"] if matches_device(node, device_model)}
@@ -176,7 +176,7 @@ def find_paths(
     return {"paths": paths, "count": len(paths)}
 
 
-def get_subgraph(keyword: str | None = None, depth: int = 2, device_model: str | None = None) -> dict[str, Any]:
+def get_subgraph(keyword: Optional[str] = None, depth: int = 2, device_model: Optional[str] = None) -> dict[str, Any]:
     if keyword:
         seed_nodes = search_nodes(keyword, device_model)
         if not seed_nodes:
@@ -356,7 +356,7 @@ def build_adjacency(edges: list[dict[str, Any]]) -> dict[str, list[dict[str, Any
     return adjacency
 
 
-def resolve_node_id(value: str, nodes: dict[str, dict[str, Any]]) -> str | None:
+def resolve_node_id(value: str, nodes: dict[str, dict[str, Any]]) -> Optional[str]:
     normalized = normalize_text(value)
     if value in nodes:
         return value
@@ -366,7 +366,7 @@ def resolve_node_id(value: str, nodes: dict[str, dict[str, Any]]) -> str | None:
     return None
 
 
-def matches_device(item: dict[str, Any], device_model: str | None) -> bool:
+def matches_device(item: dict[str, Any], device_model: Optional[str]) -> bool:
     if not device_model:
         return True
     requested = normalize_device_model(device_model)

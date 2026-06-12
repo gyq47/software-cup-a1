@@ -1,6 +1,6 @@
 import re
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional, Union
 
 from backend.core.config import DISABLE_PDF_PREVIEW, MANUAL_PAGE_IMAGE_PATH
 from backend.rag.metadata_service import extract_document_metadata
@@ -10,8 +10,8 @@ PAGE_IMAGE_SUFFIX = ".png"
 
 
 def ensure_pdf_page_images(
-    file_path: str | Path,
-    metadata: dict[str, Any] | None = None,
+    file_path: Union[str, Path],
+    metadata: Optional[dict[str, Any]] = None,
     overwrite: bool = False,
 ) -> dict[int, str]:
     path = Path(file_path)
@@ -80,7 +80,7 @@ def to_relative_project_path(path: Path) -> str:
         return str(path.resolve())
 
 
-def resolve_page_image_path(relative_path: str) -> Path | None:
+def resolve_page_image_path(relative_path: str) -> Optional[Path]:
     if not relative_path:
         return None
 

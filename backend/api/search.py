@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Optional
 
 from fastapi import APIRouter, Query
 
@@ -32,10 +32,10 @@ def semantic_search_manual(
 
 @router.get("/hybrid-search")
 def hybrid_search_manual(
-    q: str | None = Query(default=None, min_length=1),
-    query: str | None = Query(default=None, min_length=1),
+    q: Optional[str] = Query(default=None, min_length=1),
+    query: Optional[str] = Query(default=None, min_length=1),
     top_k: int = Query(5, ge=1, le=20),
-    device_model: str | None = Query(default=None),
+    device_model: Optional[str] = Query(default=None),
 ) -> dict[str, Any]:
     keyword = q or query or ""
     matches = hybrid_search(keyword, top_k=top_k, device_model=device_model)

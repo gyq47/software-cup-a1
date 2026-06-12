@@ -1,10 +1,10 @@
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional, Union
 
 from backend.rag.metadata_service import extract_document_metadata
 
 
-def load_documents(file_path: str | Path, metadata: dict[str, Any] | None = None) -> list[Any]:
+def load_documents(file_path: Union[str, Path], metadata: Optional[dict[str, Any]] = None) -> list[Any]:
     path = Path(file_path)
     suffix = path.suffix.lower()
     base_metadata = extract_document_metadata(path, metadata)

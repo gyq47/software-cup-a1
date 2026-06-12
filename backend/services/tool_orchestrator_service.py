@@ -1,5 +1,5 @@
 import time
-from typing import Any, Callable
+from typing import Any, Callable, Optional
 
 
 def build_tool_result(
@@ -9,8 +9,8 @@ def build_tool_result(
     input_summary: str = "",
     output_summary: str = "",
     duration_ms: int = 0,
-    error: str | None = None,
-    metadata: dict[str, Any] | None = None,
+    error: Optional[str] = None,
+    metadata: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
     return {
         "tool_name": tool_name,
@@ -29,7 +29,7 @@ def measure_tool(
     display_name: str,
     function: Callable[[], Any],
     input_summary: str = "",
-    output_builder: Callable[[Any], tuple[str, dict[str, Any]]] | None = None,
+    output_builder: Optional[Callable[[Any], tuple[str, dict[str, Any]]]] = None,
     required: bool = False,
 ) -> tuple[Any, dict[str, Any]]:
     started_at = time.perf_counter()
@@ -60,7 +60,7 @@ def measure_tool(
         return None, result
 
 
-def run_vision_analysis_tool(has_image: bool, vision_result: dict[str, Any] | None = None) -> dict[str, Any]:
+def run_vision_analysis_tool(has_image: bool, vision_result: Optional[dict[str, Any]] = None) -> dict[str, Any]:
     if not has_image:
         return build_tool_result(
             "VisionAnalysisTool",
@@ -87,7 +87,7 @@ def run_vision_analysis_tool(has_image: bool, vision_result: dict[str, Any] | No
 def run_rag_retrieval_tool(
     query: str,
     contexts: list[dict[str, Any]],
-    retrieval_filter: dict[str, Any] | None = None,
+    retrieval_filter: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
     retrieval_filter = retrieval_filter or {}
     fallback = bool(retrieval_filter.get("filter_fallback", False))
@@ -108,7 +108,7 @@ def run_rag_retrieval_tool(
     )
 
 
-def run_lazy_graphrag_tool(graph_context: dict[str, Any] | None = None) -> dict[str, Any]:
+def run_lazy_graphrag_tool(graph_context: Optional[dict[str, Any]] = None) -> dict[str, Any]:
     graph_context = graph_context or {}
     enabled = bool(graph_context.get("enabled", False))
     seed_count = len(graph_context.get("seed_nodes") or [])
@@ -128,7 +128,7 @@ def run_lazy_graphrag_tool(graph_context: dict[str, Any] | None = None) -> dict[
     )
 
 
-def run_diagnosis_generation_tool(diagnosis: dict[str, Any] | None = None) -> dict[str, Any]:
+def run_diagnosis_generation_tool(diagnosis: Optional[dict[str, Any]] = None) -> dict[str, Any]:
     diagnosis = diagnosis or {}
     return build_tool_result(
         "DiagnosisGenerationTool",
@@ -139,7 +139,7 @@ def run_diagnosis_generation_tool(diagnosis: dict[str, Any] | None = None) -> di
     )
 
 
-def run_workflow_generation_tool(workflow: dict[str, Any] | None = None, level: str | None = None) -> dict[str, Any]:
+def run_workflow_generation_tool(workflow: Optional[dict[str, Any]] = None, level: Optional[str] = None) -> dict[str, Any]:
     workflow = workflow or {}
     steps = workflow.get("steps") if isinstance(workflow.get("steps"), list) else []
     return build_tool_result(
@@ -151,7 +151,7 @@ def run_workflow_generation_tool(workflow: dict[str, Any] | None = None, level: 
     )
 
 
-def run_compliance_check_tool(compliance_result: dict[str, Any] | None = None) -> dict[str, Any]:
+def run_compliance_check_tool(compliance_result: Optional[dict[str, Any]] = None) -> dict[str, Any]:
     if compliance_result is None:
         return build_tool_result(
             "ComplianceCheckTool",
@@ -173,7 +173,7 @@ def run_compliance_check_tool(compliance_result: dict[str, Any] | None = None) -
     )
 
 
-def run_feedback_index_tool(index_result: dict[str, Any] | None = None) -> dict[str, Any]:
+def run_feedback_index_tool(index_result: Optional[dict[str, Any]] = None) -> dict[str, Any]:
     index_result = index_result or {}
     indexed = bool(index_result.get("rag_indexed") or index_result.get("indexed"))
     return build_tool_result(
@@ -215,7 +215,7 @@ def run_diagnosis_pipeline_trace(
     retrieval_filter: dict[str, Any],
     graph_context: dict[str, Any],
     diagnosis: dict[str, Any],
-    compliance_result: dict[str, Any] | None = None,
+    compliance_result: Optional[dict[str, Any]] = None,
 ) -> list[dict[str, Any]]:
     return [
         run_vision_analysis_tool(has_image, vision_result),
@@ -233,7 +233,7 @@ def run_workflow_pipeline_trace(
     graph_context: dict[str, Any],
     workflow: dict[str, Any],
     compliance_result: dict[str, Any],
-    level: str | None = None,
+    level: Optional[str] = None,
 ) -> list[dict[str, Any]]:
     return [
         run_rag_retrieval_tool(task, contexts, retrieval_filter),

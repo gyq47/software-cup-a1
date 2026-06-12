@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-export DISABLE_CHROMA="${DISABLE_CHROMA:-true}"
+export DISABLE_CHROMA="${DISABLE_CHROMA:-false}"
 export DISABLE_PDF_PREVIEW="${DISABLE_PDF_PREVIEW:-true}"
 export DISABLE_IMAGE_KNOWLEDGE="${DISABLE_IMAGE_KNOWLEDGE:-true}"
 export DISABLE_LOCAL_EMBEDDING="${DISABLE_LOCAL_EMBEDDING:-true}"
@@ -15,7 +15,7 @@ mkdir -p \
   backend/data/manual_pages \
   uploads/manuals
 
-echo "[LoongArch] backend minimal mode"
+echo "[LoongArch] backend Python 3.9 mode"
 echo "[LoongArch] DISABLE_CHROMA=${DISABLE_CHROMA}"
 echo "[LoongArch] DISABLE_PDF_PREVIEW=${DISABLE_PDF_PREVIEW}"
 echo "[LoongArch] DISABLE_IMAGE_KNOWLEDGE=${DISABLE_IMAGE_KNOWLEDGE}"

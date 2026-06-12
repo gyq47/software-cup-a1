@@ -4,7 +4,7 @@ import sqlite3
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 from backend.core.config import (
     DISABLE_CHROMA,
@@ -391,8 +391,8 @@ def _module(
     name: str,
     status: Status,
     message: str,
-    metrics: dict[str, Any] | None = None,
-    warnings: list[str] | None = None,
+    metrics: Optional[dict[str, Any]] = None,
+    warnings: Optional[list[str]] = None,
 ) -> dict[str, Any]:
     return {
         "name": name,

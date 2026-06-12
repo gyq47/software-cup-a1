@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Optional
 
 from backend.rag.metadata_service import extract_filters_from_query, normalize_device_model
 from backend.rag.vector_store import get_vector_store
@@ -64,7 +64,7 @@ PROGRAMMING_STAGES = (
 def retrieve_documents(
     query: str,
     top_k: int = 5,
-    filters: dict[str, Any] | None = None,
+    filters: Optional[dict[str, Any]] = None,
 ) -> list[tuple[Any, float]]:
     results, _filter_info = retrieve_documents_with_info(query, top_k=top_k, filters=filters)
     return results
@@ -73,7 +73,7 @@ def retrieve_documents(
 def retrieve_documents_with_info(
     query: str,
     top_k: int = 5,
-    filters: dict[str, Any] | None = None,
+    filters: Optional[dict[str, Any]] = None,
 ) -> tuple[list[tuple[Any, float]], dict[str, Any]]:
     filter_info = build_filter_info(filters)
     if not query.strip():
@@ -126,7 +126,7 @@ def retrieve_documents_with_info(
         return [], filter_info
 
 
-def build_filter_info(filters: dict[str, Any] | None) -> dict[str, Any]:
+def build_filter_info(filters: Optional[dict[str, Any]]) -> dict[str, Any]:
     requested_device_model = normalize_device_model((filters or {}).get("device_model"))
     return {
         "used_device_filter": bool(requested_device_model),
@@ -141,7 +141,7 @@ def run_intent_search(
     query: str,
     top_k: int,
     intent: str,
-    base_filters: dict[str, Any] | None = None,
+    base_filters: Optional[dict[str, Any]] = None,
 ) -> list[tuple[Any, float]]:
     if intent == "diagnostic":
         return staged_manual_type_search(vector_store, query, top_k, DIAGNOSTIC_STAGES, base_filters)
@@ -235,7 +235,7 @@ def staged_manual_type_search(
     query: str,
     top_k: int,
     stages: tuple[tuple[str, tuple[str, ...]], ...],
-    base_filters: dict[str, Any] | None = None,
+    base_filters: Optional[dict[str, Any]] = None,
 ) -> list[tuple[Any, float]]:
     merged_results: list[tuple[Any, float]] = []
     seen_chunk_ids: set[str] = set()
@@ -263,7 +263,7 @@ def search_by_manual_types(
     query: str,
     top_k: int,
     manual_types: tuple[str, ...],
-    base_filters: dict[str, Any] | None = None,
+    base_filters: Optional[dict[str, Any]] = None,
 ) -> list[tuple[Any, float]]:
     base_filters = dict(base_filters or {})
     if not manual_types:

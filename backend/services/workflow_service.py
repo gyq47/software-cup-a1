@@ -1,6 +1,6 @@
 import json
 import re
-from typing import Any
+from typing import Any, Optional
 
 from openai import OpenAI, OpenAIError
 
@@ -27,7 +27,7 @@ DEFAULT_INSUFFICIENT_TEXT = "知识库依据不足"
 def generate_workflow_card(
     task: str,
     top_k: int = 5,
-    device_model: str | None = None,
+    device_model: Optional[str] = None,
 ) -> tuple[dict[str, Any], dict[str, Any], list[dict[str, Any]], list[dict[str, Any]], dict[str, Any]]:
     contexts = hybrid_search(task, top_k=top_k, device_model=device_model)
     graph_context = build_lazy_graph_context(task, contexts, device_model=device_model)
@@ -42,7 +42,7 @@ def generate_workflow_card(
 def request_workflow_from_qwen(
     task: str,
     contexts: list[dict[str, Any]],
-    graph_context: dict[str, Any] | None = None,
+    graph_context: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
     if not QWEN_API_KEY:
         raise RuntimeError("QWEN_API_KEY 未配置")
@@ -96,7 +96,7 @@ def build_workflow_system_prompt() -> str:
 def build_workflow_user_prompt(
     task: str,
     contexts: list[dict[str, Any]],
-    graph_context: dict[str, Any] | None = None,
+    graph_context: Optional[dict[str, Any]] = None,
 ) -> str:
     context_text = format_workflow_contexts(contexts)
     if not context_text:
@@ -149,7 +149,7 @@ def format_workflow_contexts(contexts: list[dict[str, Any]]) -> str:
     return "\n\n".join(formatted)
 
 
-def format_workflow_graph_context(graph_context: dict[str, Any] | None) -> str:
+def format_workflow_graph_context(graph_context: Optional[dict[str, Any]]) -> str:
     if not graph_context or not graph_context.get("enabled"):
         return "未匹配到可用关联图谱节点。"
     return str(graph_context.get("graph_context_text") or "未匹配到可用关联图谱节点。")

@@ -1,6 +1,6 @@
 import re
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional, Union
 
 
 KNOWN_BRANDS = ("西门子", "SINUMERIK", "Siemens", "无极", "隆鑫", "本田", "雅马哈", "铃木", "川崎", "豪爵")
@@ -22,7 +22,7 @@ PATH_MANUAL_TYPES = {
 }
 
 
-def extract_document_metadata(file_path: str | Path, metadata: dict[str, Any] | None = None) -> dict[str, Any]:
+def extract_document_metadata(file_path: Union[str, Path], metadata: Optional[dict[str, Any]] = None) -> dict[str, Any]:
     path = Path(file_path)
     filename = path.name
     stem = path.stem
@@ -50,7 +50,7 @@ def extract_document_metadata(file_path: str | Path, metadata: dict[str, Any] | 
     }
 
 
-def extract_device_model_from_path(path: str | Path) -> str:
+def extract_device_model_from_path(path: Union[str, Path]) -> str:
     parts = [part.upper() for part in Path(path).parts]
     for part in parts:
         if part in PATH_MODEL_MAP:
@@ -58,7 +58,7 @@ def extract_device_model_from_path(path: str | Path) -> str:
     return ""
 
 
-def build_relative_path(path: str | Path) -> str:
+def build_relative_path(path: Union[str, Path]) -> str:
     resolved = Path(path).resolve()
     try:
         return str(resolved.relative_to(Path.cwd().resolve()))
@@ -66,7 +66,7 @@ def build_relative_path(path: str | Path) -> str:
         return str(resolved)
 
 
-def extract_manual_type_from_path(path: str | Path) -> str:
+def extract_manual_type_from_path(path: Union[str, Path]) -> str:
     parts = [part.lower() for part in Path(path).parts]
     for part in parts:
         if part in PATH_MANUAL_TYPES:

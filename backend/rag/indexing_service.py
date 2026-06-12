@@ -1,6 +1,6 @@
 import shutil
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional, Union
 
 from backend.core.config import (
     IMAGE_KNOWLEDGE_MAX_PAGES,
@@ -26,9 +26,9 @@ MANUAL_DIRS = (
 
 
 def index_document(
-    file_path: str | Path,
-    metadata: dict[str, Any] | None = None,
-    max_image_pages: int | None = None,
+    file_path: Union[str, Path],
+    metadata: Optional[dict[str, Any]] = None,
+    max_image_pages: Optional[int] = None,
 ) -> dict[str, Any]:
     path = Path(file_path)
     document_metadata = extract_document_metadata(path, build_metadata(path, metadata))
@@ -166,7 +166,7 @@ def manual_image_priority(path: Path) -> tuple[int, str]:
     return (9, path.name)
 
 
-def get_manual_source_dir(file_path: str | Path) -> str:
+def get_manual_source_dir(file_path: Union[str, Path]) -> str:
     path = Path(file_path).resolve()
     for source_dir, directory in MANUAL_DIRS:
         try:
@@ -177,7 +177,7 @@ def get_manual_source_dir(file_path: str | Path) -> str:
     return "unknown"
 
 
-def find_manual_path(filename: str, source_dir: str = "") -> Path | None:
+def find_manual_path(filename: str, source_dir: str = "") -> Optional[Path]:
     filename_path = Path(filename)
     if filename_path.is_absolute() and filename_path.exists() and filename_path.is_file():
         return filename_path
@@ -195,7 +195,7 @@ def find_manual_path(filename: str, source_dir: str = "") -> Path | None:
     return None
 
 
-def find_manual_path_by_relative_path(relative_path: str) -> Path | None:
+def find_manual_path_by_relative_path(relative_path: str) -> Optional[Path]:
     if not relative_path:
         return None
     path = Path(relative_path)
@@ -218,7 +218,7 @@ def clear_vector_store() -> None:
     VECTOR_STORE_PATH.mkdir(parents=True, exist_ok=True)
 
 
-def build_metadata(path: Path, metadata: dict[str, Any] | None = None) -> dict[str, Any]:
+def build_metadata(path: Path, metadata: Optional[dict[str, Any]] = None) -> dict[str, Any]:
     return {
         "source_dir": get_manual_source_dir(path),
         "relative_path": get_manual_relative_path(path),
@@ -226,7 +226,7 @@ def build_metadata(path: Path, metadata: dict[str, Any] | None = None) -> dict[s
     }
 
 
-def get_manual_relative_path(file_path: str | Path) -> str:
+def get_manual_relative_path(file_path: Union[str, Path]) -> str:
     path = Path(file_path).resolve()
     try:
         return str(path.relative_to(Path.cwd().resolve()))

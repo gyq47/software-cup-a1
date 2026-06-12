@@ -1,6 +1,6 @@
 import json
 import re
-from typing import Any
+from typing import Any, Optional
 
 from backend.core.config import QWEN_API_KEY, QWEN_BASE_URL, QWEN_MODEL
 from backend.rag.retriever import retrieve_documents_with_info
@@ -45,7 +45,7 @@ STRUCTURED_RAG_OUTPUT_PROMPT = (
 def generate_rag_contexts(
     question: str,
     top_k: int = 5,
-    filters: dict[str, Any] | None = None,
+    filters: Optional[dict[str, Any]] = None,
 ) -> list[dict[str, Any]]:
     contexts, _filter_info = generate_rag_contexts_with_info(question, top_k=top_k, filters=filters)
     return contexts
@@ -54,7 +54,7 @@ def generate_rag_contexts(
 def generate_rag_contexts_with_info(
     question: str,
     top_k: int = 5,
-    filters: dict[str, Any] | None = None,
+    filters: Optional[dict[str, Any]] = None,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     retrieved, filter_info = retrieve_documents_with_info(question, top_k=top_k, filters=filters)
     contexts = [
@@ -67,7 +67,7 @@ def generate_rag_contexts_with_info(
 def generate_rag_answer_with_info(
     question: str,
     top_k: int = 5,
-    filters: dict[str, Any] | None = None,
+    filters: Optional[dict[str, Any]] = None,
 ) -> tuple[str, list[dict[str, Any]], dict[str, Any]]:
     answer, contexts, filter_info, _graph_context = generate_rag_answer_with_graph_info(
         question,
@@ -80,7 +80,7 @@ def generate_rag_answer_with_info(
 def generate_rag_answer_with_graph_info(
     question: str,
     top_k: int = 5,
-    filters: dict[str, Any] | None = None,
+    filters: Optional[dict[str, Any]] = None,
 ) -> tuple[str, list[dict[str, Any]], dict[str, Any], dict[str, Any]]:
     contexts, filter_info = generate_rag_contexts_with_info(question, top_k=top_k, filters=filters)
     device_model = str((filters or {}).get("device_model") or "")
@@ -92,7 +92,7 @@ def generate_rag_answer_with_graph_info(
 def generate_rag_answer(
     question: str,
     top_k: int = 5,
-    filters: dict[str, Any] | None = None,
+    filters: Optional[dict[str, Any]] = None,
 ) -> tuple[str, list[dict[str, Any]]]:
     answer, contexts, _filter_info = generate_rag_answer_with_info(question, top_k=top_k, filters=filters)
     return answer, contexts
@@ -101,7 +101,7 @@ def generate_rag_answer(
 def build_rag_answer_from_contexts(
     question: str,
     contexts: list[dict[str, Any]],
-    graph_context: dict[str, Any] | None = None,
+    graph_context: Optional[dict[str, Any]] = None,
 ) -> str:
     if not contexts:
         return build_empty_rag_json()
@@ -151,7 +151,7 @@ def document_to_context(
     document: Any,
     score: float,
     index: int,
-    filter_info: dict[str, Any] | None = None,
+    filter_info: Optional[dict[str, Any]] = None,
 ) -> dict[str, Any]:
     metadata = getattr(document, "metadata", {}) or {}
     filter_info = filter_info or {}
@@ -200,7 +200,7 @@ def format_contexts_for_prompt(contexts: list[dict[str, Any]]) -> str:
     return "\n\n".join(formatted)
 
 
-def format_graph_context_for_prompt(graph_context: dict[str, Any] | None) -> str:
+def format_graph_context_for_prompt(graph_context: Optional[dict[str, Any]]) -> str:
     if not graph_context or not graph_context.get("enabled"):
         return "未匹配到可用关联图谱节点。"
     return str(graph_context.get("graph_context_text") or "未匹配到可用关联图谱节点。")
@@ -208,7 +208,7 @@ def format_graph_context_for_prompt(graph_context: dict[str, Any] | None) -> str
 
 def normalize_rag_json(
     raw_answer: str,
-    contexts: list[dict[str, Any]] | None = None,
+    contexts: Optional[list[dict[str, Any]]] = None,
     query: str = "",
 ) -> str:
     try:

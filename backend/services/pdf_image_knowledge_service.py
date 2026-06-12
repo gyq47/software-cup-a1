@@ -2,7 +2,7 @@ import base64
 import json
 import re
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional, Union
 
 from openai import OpenAI
 
@@ -35,7 +35,7 @@ MAX_KEYWORDS = 12
 
 
 def extract_page_image_knowledge(
-    image_path: str | Path,
+    image_path: Union[str, Path],
     device_model: str,
     manual_type: str,
     pdf_filename: str,
@@ -91,10 +91,10 @@ def extract_page_image_knowledge(
 
 
 def build_page_image_documents(
-    file_path: str | Path,
+    file_path: Union[str, Path],
     document_metadata: dict[str, Any],
     page_images: dict[int, str],
-    max_pages: int | None = None,
+    max_pages: Optional[int] = None,
 ) -> list[Any]:
     if DISABLE_IMAGE_KNOWLEDGE:
         print("[PDF Image Knowledge] disabled, skip manual image knowledge.")
@@ -285,7 +285,7 @@ def has_useful_knowledge(knowledge: dict[str, Any]) -> bool:
     return bool(ocr_text or image_summary or keywords)
 
 
-def load_cached_knowledge(image_path: Path) -> dict[str, Any] | None:
+def load_cached_knowledge(image_path: Path) -> Optional[dict[str, Any]]:
     cache_path = build_cache_path(image_path)
     if not cache_path.exists():
         return None
@@ -310,7 +310,7 @@ def build_cache_path(image_path: Path) -> Path:
     return (IMAGE_KNOWLEDGE_PATH / relative).with_suffix(".json")
 
 
-def resolve_project_path(path: str | Path) -> Path:
+def resolve_project_path(path: Union[str, Path]) -> Path:
     raw_path = Path(path)
     return raw_path if raw_path.is_absolute() else Path.cwd() / raw_path
 
