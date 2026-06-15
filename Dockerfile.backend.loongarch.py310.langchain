@@ -1,0 +1,46 @@
+# Python 3.10 + LangChain backend route for LoongArch deployment experiments.
+#
+# Preferred base image for the current VM plan:
+#   FROM a1-python310-loongarch:3.10.14
+#
+# The image is expected to be built on the VM by compiling Python 3.10.14 from
+# the already verified loongarch64/python:3.9 base, then tagging it as
+# a1-python310-loongarch:3.10.14.
+#
+# If a future loongarch64/python:3.10 image becomes reliable and fast enough,
+# this FROM line can be changed to:
+#   FROM loongarch64/python:3.10
+#
+# Do not use loongarch64/python:3.11 for this route. It was previously found
+# unstable for the project's deployment baseline and is not the current target.
+FROM a1-python310-loongarch:3.10.14
+
+WORKDIR /app
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple
+ENV PIP_DEFAULT_TIMEOUT=120
+
+# Runtime feature flags. Chroma is enabled by default for the py310 LangChain
+# route, while local HuggingFace/sentence-transformers embedding remains off.
+ENV DISABLE_CHROMA=false
+ENV DISABLE_LOCAL_EMBEDDING=true
+ENV DISABLE_PDF_PREVIEW=true
+ENV DISABLE_IMAGE_KNOWLEDGE=true
+
+COPY requirements-core-py310-langchain.txt ./requirements-core-py310-langchain.txt
+COPY wheels ./wheels
+
+RUN python -m pip install --upgrade pip setuptools wheel \
+    && python -m pip install -r requirements-core-py310-langchain.txt
+
+COPY backend ./backend
+COPY scripts ./scripts
+COPY uploads ./uploads
+
+RUN mkdir -p /app/backend/data /app/uploads /app/logs /app/wheels
+
+EXPOSE 8000
+
+CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]

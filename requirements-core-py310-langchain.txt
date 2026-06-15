@@ -1,0 +1,25 @@
+fastapi==0.115.14
+starlette==0.46.2
+pydantic==2.11.9
+uvicorn==0.35.0
+python-dotenv==1.1.1
+python-multipart==0.0.20
+openai>=2.26.0,<3.0.0
+dashscope==1.23.9
+requests==2.32.5
+aiofiles==24.1.0
+pypdf==5.9.0
+jieba==0.42.1
+rank-bm25==0.2.2
+numpy==1.26.4
+chromadb==0.4.24
+langchain>=1.0.0,<2.0.0
+langchain-core>=1.0.0,<2.0.0
+langchain-community>=0.4.0,<1.0.0
+langchain-text-splitters>=1.0.0,<2.0.0
+langchain-openai>=1.0.0,<2.0.0
+# langchain-chroma is intentionally not a hard dependency here. Some LoongArch
+# cp310 environments may need to keep chromadb==0.4.24; the project falls back
+# to backend/rag/vector_store.py's chromadb PersistentClient adapter when
+# LangChain Chroma integration is unavailable.
+# langchain-chroma>=1.0.0,<2.0.0

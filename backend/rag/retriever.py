@@ -133,6 +133,7 @@ def build_filter_info(filters: Optional[dict[str, Any]]) -> dict[str, Any]:
         "filter_fallback": False,
         "filter_message": "",
         "requested_device_model": requested_device_model,
+        "retrieval_backend": "chroma",
     }
 
 
@@ -209,6 +210,7 @@ def attach_filter_info(
                 "filter_fallback": filter_info.get("filter_fallback", False),
                 "filter_message": filter_info.get("filter_message", ""),
                 "requested_device_model": filter_info.get("requested_device_model", ""),
+                "retrieval_backend": filter_info.get("retrieval_backend", "chroma"),
             }
         )
     return results

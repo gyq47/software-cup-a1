@@ -92,15 +92,17 @@ def run_rag_retrieval_tool(
     retrieval_filter = retrieval_filter or {}
     fallback = bool(retrieval_filter.get("filter_fallback", False))
     device = retrieval_filter.get("requested_device_model") or "未指定"
+    backend = retrieval_filter.get("retrieval_backend") or "unknown"
     status = "success" if contexts else "skipped"
     return build_tool_result(
         "RagRetrievalTool",
         "知识检索工具",
         status,
         input_summary=truncate(query),
-        output_summary=f"召回 {len(contexts)} 条依据，设备过滤：{device}，{'触发 fallback' if fallback else '未触发 fallback'}",
+        output_summary=f"召回 {len(contexts)} 条依据，检索后端：{backend}，设备过滤：{device}，{'触发 fallback' if fallback else '未触发 fallback'}",
         metadata={
             "context_count": len(contexts),
+            "retrieval_backend": backend,
             "used_device_filter": bool(retrieval_filter.get("used_device_filter", False)),
             "filter_fallback": fallback,
             "filter_message": retrieval_filter.get("filter_message", ""),

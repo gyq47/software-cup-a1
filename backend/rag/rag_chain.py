@@ -187,6 +187,7 @@ def document_to_context(
         "filter_fallback": metadata.get("filter_fallback", filter_info.get("filter_fallback", False)),
         "filter_message": metadata.get("filter_message", filter_info.get("filter_message", "")),
         "requested_device_model": metadata.get("requested_device_model", filter_info.get("requested_device_model", "")),
+        "retrieval_backend": metadata.get("retrieval_backend", filter_info.get("retrieval_backend", "chroma")),
     }
 
 

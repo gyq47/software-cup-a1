@@ -14,6 +14,9 @@ __pycache__/
 venv/
 .venv/
 .venv-py39/
+.venv-py310/
+.venv-py310-vmcompat/
+.venv-py310-vmcompat-test/
 
 # Do not commit compiled LoongArch wheels or source archives.
 # Docker build still needs wheels in the build context, so do not mirror this
@@ -38,6 +41,7 @@ backend/data/manual_pages/
 
 # Vector stores and processed runtime artifacts
 backend/data/vector_store/
+backend/data/vector_store_backup_*/
 backend/data/processed/
 
 # Runtime feedback and case data

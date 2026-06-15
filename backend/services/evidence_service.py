@@ -70,6 +70,7 @@ def build_retrieval_filter_result(contexts: list[dict[str, Any]]) -> dict[str, A
     filter_fallback = bool(first_context.get("filter_fallback", False))
     requested_device_model = str(first_context.get("requested_device_model", ""))
     filter_message = str(first_context.get("filter_message", ""))
+    retrieval_backend = str(first_context.get("retrieval_backend", ""))
     if used_device_filter and not filter_message:
         filter_message = f"已优先使用设备型号 {requested_device_model} 的知识来源"
     return {
@@ -77,6 +78,7 @@ def build_retrieval_filter_result(contexts: list[dict[str, Any]]) -> dict[str, A
         "filter_fallback": filter_fallback,
         "filter_message": filter_message,
         "requested_device_model": requested_device_model,
+        "retrieval_backend": retrieval_backend,
     }
 
 

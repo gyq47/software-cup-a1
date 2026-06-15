@@ -385,6 +385,7 @@ def add_filter_metadata(
         item["filter_fallback"] = filter_fallback
         item["filter_message"] = filter_message
         item["requested_device_model"] = requested_device_model
+        item["retrieval_backend"] = "legacy"
     return results
 
 
