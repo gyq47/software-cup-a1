@@ -496,7 +496,9 @@ def call_qwen_answer(prompt: str) -> str:
     from backend.core.config import QWEN_API_KEY, QWEN_BASE_URL, QWEN_MODEL
     from openai import OpenAI
 
-    client = OpenAI(api_key=QWEN_API_KEY, base_url=QWEN_BASE_URL, timeout=30)
+    timeout = get_llm_timeout()
+    max_tokens = get_llm_max_tokens()
+    client = OpenAI(api_key=QWEN_API_KEY, base_url=QWEN_BASE_URL, timeout=timeout)
     response = client.chat.completions.create(
         model=QWEN_MODEL,
         messages=[
@@ -504,8 +506,29 @@ def call_qwen_answer(prompt: str) -> str:
             {"role": "user", "content": prompt},
         ],
         temperature=0.1,
+        max_tokens=max_tokens,
     )
     return response.choices[0].message.content or ""
+
+
+def get_llm_timeout() -> int:
+    value = os.getenv("LLM_TIMEOUT", "").strip()
+    if not value:
+        return 90
+    try:
+        return max(10, int(value))
+    except ValueError:
+        return 90
+
+
+def get_llm_max_tokens() -> int:
+    value = os.getenv("LLM_MAX_TOKENS", "").strip()
+    if not value:
+        return 900
+    try:
+        return max(128, int(value))
+    except ValueError:
+        return 900
 
 
 def build_mock_answer(state: ChatState, reason: str = "") -> str:
